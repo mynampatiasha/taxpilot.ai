@@ -2,30 +2,30 @@
 // TAXPILOT SYNC — standalone version, no Firebase billing plan required.
 //
 // This replaces the Cloud Functions version of the sync (scheduledSync /
-// syncNow in index.js) with a plain Node.js script you run yourself, using
-// the same firestore/gstEngine logic. It reads Abra's MongoDB directly (Abra
+// syncNow in index.js) with a plain Node.js script, using the same
+// firestore/gstEngine logic. It reads Abra's MongoDB directly (Abra
 // Finance's own code is never touched) and writes results into TaxPilot's
-// Firestore, exactly like the Cloud Functions version did — it just runs
-// from your own machine instead of Google's servers, so it doesn't need the
-// Blaze billing plan at all.
+// Firestore — no Blaze billing plan needed, whether run locally or hosted.
 //
-// ONE-TIME SETUP:
+// Credentials are read two ways, so the exact same script works both on
+// your own machine and on a host like Render:
+//   - Locally: serviceAccountKey.json in this folder + a .env file
+//     (both gitignored — never committed).
+//   - Hosted (e.g. Render Cron Job): environment variables instead of
+//     files — SERVICE_ACCOUNT_KEY_JSON (paste the whole key file's JSON
+//     content as one env var value) and SOURCE_MONGO_URI, set in the
+//     host's own dashboard, never in this repo.
+//
+// LOCAL ONE-TIME SETUP:
 //   1. Firebase Console -> gear icon -> Project settings -> Service accounts
 //      -> "Generate new private key" -> save the downloaded JSON file as
 //      serviceAccountKey.json in this same functions/ folder.
-//      (This file is a real credential — it's already gitignored below via
-//      .gitignore so it's never accidentally committed anywhere.)
 //   2. Copy .env.example to .env in this folder and fill in SOURCE_MONGO_URI
 //      (from Billing_backend/.env's MONGODB_URI).
 //   3. Create the orgMappings document in Firestore as before (unchanged).
 //
-// TO RUN:
+// TO RUN LOCALLY:
 //   node sync.js
-//
-// TO RUN AUTOMATICALLY ON A SCHEDULE (optional, replaces the 15-min Cloud
-// Scheduler): use Windows Task Scheduler to run
-//   node C:\Users\user\Downloads\taxpilot-ai\functions\sync.js
-// on whatever interval you want — completely free, runs on your machine.
 // ============================================================================
 
 require('dotenv').config();
@@ -36,16 +36,26 @@ const fs = require('fs');
 const { evaluateInvoice, STATE_CODES, fyOf } = require('./gstEngine');
 
 const KEY_PATH = path.join(__dirname, 'serviceAccountKey.json');
-if (!fs.existsSync(KEY_PATH)) {
-  console.error('Missing serviceAccountKey.json — see the setup steps at the top of this file.');
+let serviceAccount;
+if (process.env.SERVICE_ACCOUNT_KEY_JSON) {
+  try {
+    serviceAccount = JSON.parse(process.env.SERVICE_ACCOUNT_KEY_JSON);
+  } catch (e) {
+    console.error('SERVICE_ACCOUNT_KEY_JSON is set but is not valid JSON:', e.message);
+    process.exit(1);
+  }
+} else if (fs.existsSync(KEY_PATH)) {
+  serviceAccount = require(KEY_PATH);
+} else {
+  console.error('No credentials found — set SERVICE_ACCOUNT_KEY_JSON (hosted) or add serviceAccountKey.json (local). See the setup steps at the top of this file.');
   process.exit(1);
 }
 if (!process.env.SOURCE_MONGO_URI) {
-  console.error('Missing SOURCE_MONGO_URI in .env — copy .env.example to .env and fill it in.');
+  console.error('Missing SOURCE_MONGO_URI — set it as an environment variable (hosted) or in .env (local).');
   process.exit(1);
 }
 
-admin.initializeApp({ credential: admin.credential.cert(require(KEY_PATH)) });
+admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
 const db = admin.firestore();
 
 const STATE_NAME_TO_CODE = Object.fromEntries(

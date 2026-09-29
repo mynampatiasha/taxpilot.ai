@@ -1,0 +1,13 @@
+services:
+  - type: cron
+    name: taxpilot-sync
+    runtime: node
+    plan: free
+    schedule: "*/15 * * * *"
+    buildCommand: cd functions && npm install
+    startCommand: cd functions && node sync.js
+    envVars:
+      - key: SOURCE_MONGO_URI
+        sync: false
+      - key: SERVICE_ACCOUNT_KEY_JSON
+        sync: false
