@@ -1,11 +1,12 @@
 {
   "name": "taxpilot-functions",
   "description": "TaxPilot AI backend — the centralized GST API other modules (starting with Abra Finance) call into. Reads source invoice/bill data directly from each module's own database (no changes required on their side) and runs it through the same deterministic GST engine as the TaxPilot web app.",
-  "main": "index.js",
+  "main": "server.js",
   "engines": {
     "node": "20"
   },
   "scripts": {
+    "start": "node server.js",
     "sync": "node sync.js",
     "serve": "firebase emulators:start --only functions",
     "deploy": "firebase deploy --only functions",
