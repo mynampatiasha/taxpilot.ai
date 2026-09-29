@@ -1,0 +1,2321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TaxPilot AI — GST Compliance Assistant</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f5f7fb; --surface:#fff; --surface-2:#f0f3f9; --line:#e2e7f0; --text:#101828; --muted:#5b6474; --faint:#8a93a3;
+  --brand:#2b59e0; --brand-2:#1d44b8; --brand-soft:#e8eeff;
+  --ok:#0f8a5f; --ok-soft:#e3f6ee; --warn:#b26b00; --warn-soft:#fff3dc; --bad:#c9372c; --bad-soft:#fde8e6; --info:#5b4bd6; --info-soft:#eeebff;
+  --radius:12px; --shadow:0 1px 2px rgba(16,24,40,.06),0 4px 16px rgba(16,24,40,.06);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+a{color:var(--brand);text-decoration:none}
+h1,h2,h3,h4{margin:0 0 .5em;line-height:1.25}
+code,pre{font-family:ui-monospace,Consolas,monospace}
+button,input,select,textarea{font:inherit;color:inherit}
+.btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);padding:8px 14px;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;white-space:nowrap}
+.btn:hover{background:var(--surface-2)}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+.btn.primary:hover{background:var(--brand-2)}
+.btn.danger{color:var(--bad);border-color:#f3c3be}
+.btn.ghost{border-color:transparent;background:transparent}
+.btn.sm{padding:5px 10px;font-size:12px}
+.btn.lg{padding:12px 22px;font-size:15px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px 10px;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+input[type=checkbox]{width:auto}
+label.f{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:4px}
+.field{margin-bottom:12px}
+.hint{font-size:12px;color:var(--faint);margin-top:3px}
+.hint.ok{color:var(--ok)} .hint.bad{color:var(--bad)}
+.grid{display:grid;gap:12px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))} .g3{grid-template-columns:repeat(3,minmax(0,1fr))} .g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.spacer{flex:1}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+.card h3{font-size:15px}
+.muted{color:var(--muted)} .faint{color:var(--faint)} .small{font-size:12px} .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.02em;white-space:nowrap;background:var(--surface-2);color:var(--muted)}
+.b-ok{background:var(--ok-soft);color:var(--ok)} .b-warn{background:var(--warn-soft);color:var(--warn)} .b-bad{background:var(--bad-soft);color:var(--bad)} .b-info{background:var(--info-soft);color:var(--info)} .b-brand{background:var(--brand-soft);color:var(--brand)}
+table.t{width:100%;border-collapse:collapse;font-size:13px}
+table.t th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--faint);font-weight:700;padding:8px 10px;border-bottom:1px solid var(--line);background:var(--surface-2);white-space:nowrap}
+table.t td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+table.t tr.click{cursor:pointer} table.t tr.click:hover td{background:#fafbff}
+table.t tfoot td{font-weight:700;background:var(--surface-2)}
+.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:#fff}
+.empty{padding:36px;text-align:center;color:var(--faint)}
+.notice{padding:10px 14px;border-radius:10px;font-size:13px;margin-bottom:14px;border:1px solid}
+.notice.warn{background:var(--warn-soft);border-color:#f3dca9;color:#7a4a00}
+.notice.bad{background:var(--bad-soft);border-color:#f3c3be;color:#8f241c}
+.notice.info{background:var(--brand-soft);border-color:#cbd7ff;color:#1d3a8f}
+.notice.ok{background:var(--ok-soft);border-color:#b6e6d1;color:#0b5f42}
+.splash{display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:10px;color:var(--muted)}
+.spin{width:28px;height:28px;border:3px solid var(--line);border-top-color:var(--brand);border-radius:50%;animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;letter-spacing:-.02em;color:var(--text)}
+.logo i{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,#2b59e0,#7b5cff);display:grid;place-items:center;color:#fff;font-style:normal;font-size:15px}
+/* landing */
+.land-nav{display:flex;align-items:center;padding:18px 32px;max-width:1180px;margin:0 auto}
+.hero{max-width:1180px;margin:0 auto;padding:56px 32px 40px;display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center}
+.hero h1{font-size:46px;letter-spacing:-.03em;font-weight:800}
+.hero h1 span{background:linear-gradient(90deg,#2b59e0,#7b5cff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p.lead{font-size:18px;color:var(--muted);max-width:560px}
+.hero-card{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:20px}
+.hero-card .kv{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed var(--line)}
+.section{max-width:1180px;margin:0 auto;padding:40px 32px}
+.section h2{font-size:28px;letter-spacing:-.02em}
+.features{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:20px}
+.feature{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px}
+.feature b{display:block;margin-bottom:4px}
+.flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:18px}
+.flow span{background:#fff;border:1px solid var(--line);padding:8px 12px;border-radius:999px;font-weight:600;font-size:13px}
+.flow em{color:var(--faint);font-style:normal}
+.principle{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:20px}
+.principle div{border-radius:14px;padding:18px;border:1px solid var(--line);background:#fff}
+footer.land{text-align:center;color:var(--faint);padding:30px;font-size:12px}
+/* auth */
+.auth-wrap{min-height:100vh;display:grid;place-items:center;padding:24px}
+.auth-card{width:100%;max-width:420px}
+.auth-card .card{padding:28px}
+/* shell */
+.shell{display:grid;grid-template-columns:232px 1fr;min-height:100vh}
+.side{background:#0f1a36;color:#c7d0e4;padding:16px 12px;position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column}
+.side .logo{color:#fff;padding:4px 8px 16px}
+.side nav a{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;color:#c7d0e4;font-weight:500;margin-bottom:2px}
+.side nav a:hover{background:rgba(255,255,255,.06);color:#fff}
+.side nav a.on{background:rgba(111,140,255,.18);color:#fff}
+.side nav a .cnt{margin-left:auto;background:#c9372c;color:#fff;border-radius:999px;font-size:11px;padding:0 7px;font-weight:700}
+.side .sec{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#6f7b98;padding:14px 10px 6px;font-weight:700}
+.side .foot{margin-top:auto;font-size:11px;color:#6f7b98;padding:10px}
+.top{display:flex;align-items:center;gap:10px;padding:10px 22px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20;flex-wrap:wrap}
+.top select{width:auto;min-width:0;padding:6px 8px}
+.top .who{display:flex;align-items:center;gap:8px}
+.avatar{width:30px;height:30px;border-radius:50%;background:var(--brand-soft);color:var(--brand);display:grid;place-items:center;font-weight:700;font-size:12px}
+.burger{display:none}
+main#main{padding:22px;max-width:1320px}
+.page-head{display:flex;align-items:flex-end;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+.page-head h2{font-size:22px;margin:0;letter-spacing:-.01em}
+.page-head .sub{color:var(--muted);font-size:13px}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:16px}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow)}
+.kpi .l{font-size:12px;color:var(--muted);font-weight:600}
+.kpi .v{font-size:22px;font-weight:800;letter-spacing:-.02em;margin-top:2px;font-variant-numeric:tabular-nums}
+.kpi .s{font-size:11px;color:var(--faint)}
+.cols{display:grid;grid-template-columns:2fr 1fr;gap:16px}
+.chat-cols{display:grid;grid-template-columns:260px minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:1000px){.chat-cols{grid-template-columns:1fr}}
+.list-row{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line)}
+.list-row:last-child{border-bottom:0}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.toolbar input,.toolbar select{width:auto}
+.toolbar input[type=search]{min-width:220px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:14px}
+.tabs button{border:0;background:none;padding:9px 14px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent}
+.tabs button.on{color:var(--brand);border-bottom-color:var(--brand)}
+.checks .ck{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}
+.checks .ck:last-child{border-bottom:0}
+.ic{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:800;flex:none}
+.ic.ok{background:var(--ok-soft);color:var(--ok)} .ic.bad{background:var(--bad-soft);color:var(--bad)} .ic.warn{background:var(--warn-soft);color:var(--warn)}
+/* modal */
+.modal-back{position:fixed;inset:0;background:rgba(15,26,54,.45);z-index:100;display:flex;align-items:flex-start;justify-content:center;padding:4vh 16px;overflow-y:auto}
+.modal{background:#fff;border-radius:14px;width:100%;max-width:560px;box-shadow:0 20px 60px rgba(0,0,0,.25);display:flex;flex-direction:column}
+.modal.wide{max-width:1120px}
+.modal-head{display:flex;align-items:center;padding:16px 20px;border-bottom:1px solid var(--line)}
+.modal-head h3{margin:0;font-size:17px}
+.modal-body{padding:18px 20px}
+.modal-foot{display:flex;gap:8px;justify-content:flex-end;padding:14px 20px;border-top:1px solid var(--line);background:var(--surface-2);border-radius:0 0 14px 14px}
+.x{margin-left:auto;border:0;background:none;font-size:22px;cursor:pointer;color:var(--faint);line-height:1}
+table.lines td{padding:4px}
+table.lines input,table.lines select{padding:6px 7px;font-size:13px}
+table.lines td.calc{font-size:12px;color:var(--muted);white-space:nowrap;padding-top:10px}
+.totals{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin:12px 0}
+.totals div{background:var(--surface-2);border-radius:8px;padding:8px 10px}
+.totals div b{display:block;font-size:15px;font-variant-numeric:tabular-nums}
+.totals div span{font-size:11px;color:var(--muted);font-weight:600}
+.issue-list .it{display:flex;gap:8px;padding:6px 0;font-size:13px;align-items:flex-start}
+#toast{position:fixed;bottom:20px;right:20px;z-index:200;display:flex;flex-direction:column;gap:8px}
+#toast div{background:#101828;color:#fff;padding:10px 16px;border-radius:10px;box-shadow:var(--shadow);font-size:13px;max-width:380px}
+#toast div.err{background:#8f241c}
+pre.rules{background:#0f1a36;color:#d7def0;padding:16px;border-radius:10px;overflow:auto;max-height:420px;font-size:12px}
+ol.steps li{margin-bottom:8px}
+@media (max-width:1000px){
+  .kpis{grid-template-columns:repeat(2,1fr)} .cols{grid-template-columns:1fr} .g4{grid-template-columns:repeat(2,1fr)} .totals{grid-template-columns:repeat(3,1fr)}
+  .hero{grid-template-columns:1fr} .features,.principle{grid-template-columns:1fr 1fr}
+}
+@media (max-width:760px){
+  .shell{grid-template-columns:1fr}
+  .side{position:fixed;left:0;top:0;z-index:50;width:240px;transform:translateX(-100%);transition:transform .2s}
+  .side.open{transform:none}
+  .burger{display:inline-flex}
+  main#main{padding:16px}
+  .g2,.g3,.g4{grid-template-columns:1fr} .features,.principle{grid-template-columns:1fr}
+  .hero h1{font-size:34px} .land-nav,.hero,.section{padding-left:16px;padding-right:16px}
+  .toolbar input[type=search]{min-width:0;width:100%}
+}
+@media print{
+  .side,.top,.no-print,.modal-foot{display:none!important} .shell{display:block} main#main{padding:0} .card{box-shadow:none}
+}
+</style>
+</head>
+<body>
+<div id="app"><div class="splash"><div class="spin"></div>Loading TaxPilot AI…</div></div>
+<div id="modal-root"></div>
+<div id="toast"></div>
+
+<!-- Firestore security rules: copy from the Setup page (or from here) into Firebase Console → Firestore Database → Rules → Publish -->
+<script type="text/plain" id="fs-rules">rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function uid() { return request.auth.uid; }
+    function email() { return request.auth.token.email; }
+    function changed() { return request.resource.data.diff(resource.data).affectedKeys(); }
+
+    match /users/{userId} {
+      allow read, create, update: if signedIn() && uid() == userId;
+      allow delete: if false;
+    }
+
+    match /businesses/{bid} {
+      function bizData() { return get(/databases/$(database)/documents/businesses/$(bid)).data; }
+      function member() { return signedIn() && uid() in bizData().memberIds; }
+      function hasRole(rs) { return member() && bizData().roles[uid()] in rs; }
+      function periodOpen(p) {
+        let path = /databases/$(database)/documents/businesses/$(bid)/periods/$(p);
+        return p is string && p.matches('^[0-9]{4}-[0-9]{2}$')
+          && (!exists(path) || get(path).data.status == 'OPEN');
+      }
+
+      allow read: if signedIn() && (uid() in resource.data.memberIds || email() in resource.data.inviteEmails);
+
+      allow create: if signedIn()
+        && request.resource.data.createdBy == uid()
+        && request.resource.data.memberIds == [uid()]
+        && request.resource.data.roles.keys().hasOnly([uid()])
+        && request.resource.data.roles[uid()] == 'OWNER'
+        && request.resource.data.inviteEmails.size() == 0
+        && request.resource.data.invites.size() == 0
+        && request.resource.data.name is string && request.resource.data.name.size() > 0
+        && request.resource.data.gstin is string && request.resource.data.gstin.size() == 15;
+
+      allow update: if signedIn() && (
+        // profile edits by owner / admin
+        (uid() in resource.data.memberIds && resource.data.roles[uid()] in ['OWNER', 'ADMIN']
+          && !changed().hasAny(['memberIds', 'roles', 'memberInfo', 'invites', 'inviteEmails', 'createdBy', 'createdAt']))
+        ||
+        // team management by owner; the owner must remain an owner
+        (uid() in resource.data.memberIds && resource.data.roles[uid()] == 'OWNER'
+          && changed().hasOnly(['memberIds', 'roles', 'memberInfo', 'invites', 'inviteEmails', 'updatedAt'])
+          && uid() in request.resource.data.memberIds
+          && request.resource.data.roles[uid()] == 'OWNER'
+          && request.resource.data.roles.keys().toSet() == request.resource.data.memberIds.toSet()
+          && request.resource.data.inviteEmails.toSet() == request.resource.data.invites.keys().toSet())
+        ||
+        // accept an invitation (verified email only)
+        (request.auth.token.email_verified == true
+          && email() in resource.data.inviteEmails
+          && !(uid() in resource.data.memberIds)
+          && changed().hasOnly(['memberIds', 'roles', 'memberInfo', 'invites', 'inviteEmails', 'updatedAt'])
+          && request.resource.data.memberIds.toSet() == resource.data.memberIds.toSet().union([uid()].toSet())
+          && request.resource.data.roles.diff(resource.data.roles).affectedKeys().hasOnly([uid()])
+          && request.resource.data.roles[uid()] == resource.data.invites[email()]
+          && request.resource.data.memberInfo.diff(resource.data.memberInfo).affectedKeys().hasOnly([uid()])
+          && request.resource.data.invites.diff(resource.data.invites).affectedKeys().hasOnly([email()])
+          && !(email() in request.resource.data.invites)
+          && request.resource.data.inviteEmails.toSet() == resource.data.inviteEmails.toSet().difference([email()].toSet()))
+        ||
+        // decline an invitation
+        (email() in resource.data.inviteEmails
+          && changed().hasOnly(['invites', 'inviteEmails', 'updatedAt'])
+          && request.resource.data.invites.diff(resource.data.invites).affectedKeys().hasOnly([email()])
+          && !(email() in request.resource.data.invites)
+          && request.resource.data.inviteEmails.toSet() == resource.data.inviteEmails.toSet().difference([email()].toSet()))
+      );
+      allow delete: if false;
+
+      match /invoices/{invId} {
+        allow read: if member();
+        allow create: if hasRole(['OWNER', 'ADMIN', 'ACCOUNTANT'])
+          && request.resource.data.type in ['SALE', 'PURCHASE']
+          && periodOpen(request.resource.data.period);
+        allow update: if hasRole(['OWNER', 'ADMIN', 'ACCOUNTANT'])
+          && periodOpen(resource.data.period) && periodOpen(request.resource.data.period);
+        allow delete: if hasRole(['OWNER', 'ADMIN', 'ACCOUNTANT']) && periodOpen(resource.data.period);
+      }
+
+      match /payments/{invId} {
+        allow read: if member();
+        allow write: if hasRole(['OWNER', 'ADMIN', 'ACCOUNTANT']);
+      }
+
+      match /issues/{issueId} {
+        allow read: if member();
+        allow create, update: if hasRole(['OWNER', 'ADMIN', 'ACCOUNTANT', 'CA']);
+        allow delete: if false;
+      }
+
+      match /gstr2b/{rowId} {
+        allow read: if member();
+        allow write: if hasRole(['OWNER', 'ADMIN', 'ACCOUNTANT']);
+      }
+
+      match /periods/{p} {
+        allow read: if member();
+        allow create: if p.matches('^[0-9]{4}-[0-9]{2}$') && request.resource.data.status == 'APPROVED'
+          && hasRole(['OWNER', 'CA']);
+        allow update: if p.matches('^[0-9]{4}-[0-9]{2}$') && (
+          (resource.data.status == 'OPEN' && request.resource.data.status == 'APPROVED' && hasRole(['OWNER', 'CA']))
+          || (resource.data.status == 'APPROVED' && request.resource.data.status == 'FILED' && hasRole(['OWNER', 'CA']))
+          || (resource.data.status == 'APPROVED' && request.resource.data.status == 'OPEN' && hasRole(['OWNER'])));
+        allow delete: if false;
+      }
+
+      match /aiConversations/{convId} {
+        allow read, delete: if member() && resource.data.userId == uid();
+        allow create: if member() && request.resource.data.userId == uid();
+        allow update: if member() && resource.data.userId == uid() && request.resource.data.userId == uid();
+      }
+
+      match /auditLogs/{logId} {
+        allow read: if member();
+        allow create: if member() && request.resource.data.userId == uid()
+          && request.resource.data.timestamp == request.time;
+        allow update, delete: if false;
+      }
+    }
+  }
+}
+</script>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+import { getAnalytics, isSupported } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-analytics.js";
+import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut,
+  updateProfile, sendEmailVerification, sendPasswordResetEmail, reload, verifyBeforeUpdateEmail, updatePassword,
+  EmailAuthProvider, reauthenticateWithCredential } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, getDocs, setDoc, updateDoc, addDoc, deleteDoc, collection, query, where, orderBy, limit,
+  onSnapshot, writeBatch, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+
+/* =====================================================================
+   FIREBASE
+   The web config below is a public identifier, not a secret.
+   Data is protected by the Firestore rules (see Setup page).
+   ===================================================================== */
+const firebaseConfig = {
+  apiKey: "AIzaSyBo_7BbMlSm5IUxVidValgJhUuG3LgENmk",
+  authDomain: "taxpilot-ai-d68c0.firebaseapp.com",
+  projectId: "taxpilot-ai-d68c0",
+  storageBucket: "taxpilot-ai-d68c0.firebasestorage.app",
+  messagingSenderId: "760895063924",
+  appId: "1:760895063924:web:0a0296ea30a8e1ec328e21",
+  measurementId: "G-V5KSQ4NXJ8"
+};
+const fbApp = initializeApp(firebaseConfig);
+isSupported().then(ok => { if (ok) getAnalytics(fbApp); }).catch(() => {});
+const auth = getAuth(fbApp);
+const db = getFirestore(fbApp);
+
+/* =====================================================================
+   AI — Gemini through Firebase AI Logic (Gemini Developer API backend).
+   No API key lives in this file: Firebase proxies the calls for this project.
+   AI only reads and explains; every tax figure comes from the rules engine.
+   ===================================================================== */
+const AI_MODEL = 'gemini-3.8-flash'; // change here if Google retires this model
+let aiMod = null;
+// opts may be an object or a function (module) => object, for options that need the SDK (e.g. Schema)
+async function aiModel(opts = {}) {
+  if (!aiMod) aiMod = await import('https://www.gstatic.com/firebasejs/12.19.0/firebase-ai.js');
+  const ai = aiMod.getAI(fbApp, { backend: new aiMod.GoogleAIBackend() });
+  const o = typeof opts === 'function' ? opts(aiMod) : opts;
+  return { m: aiMod, model: aiMod.getGenerativeModel(ai, { model: AI_MODEL, ...o }) };
+}
+function aiFriendly(e) {
+  const s = String(e?.message || e); const raw = `\n\nDetails: ${s.slice(0, 300)}`;
+  if (/quota|429|exhausted|rate.?limit/i.test(s)) return 'AI free-tier limit reached. Wait a minute (or until tomorrow for the daily limit) and try again.' + raw;
+  if (/\b404\b|not found/i.test(s) && /model/i.test(s)) return `The AI model "${AI_MODEL}" is not available. Update AI_MODEL in the HTML file to a current Gemini model.` + raw;
+  if (/has not been used|API_NOT_ENABLED|api-not-enabled|SERVICE_DISABLED/i.test(s)) return 'AI is not enabled for this project. Firebase Console → AI services → AI Logic → Get started → choose "Gemini Developer API".' + raw;
+  if (/\b(500|503)\b|overloaded|unavailable/i.test(s)) return 'The AI service is busy right now. Please try again in a moment.' + raw;
+  return 'AI error: ' + s;
+}
+const fileToBase64 = file => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1]); r.onerror = () => rej(r.error); r.readAsDataURL(file); });
+
+function invoiceSchema(S_) {
+  const line = S_.object({
+    properties: { description: S_.string(), hsn: S_.string(), quantity: S_.number(), unitPrice: S_.number(), taxableValue: S_.number(), gstRate: S_.number(), cgst: S_.number(), sgst: S_.number(), igst: S_.number(), cess: S_.number() },
+    optionalProperties: ['hsn', 'quantity', 'unitPrice', 'cgst', 'sgst', 'igst', 'cess']
+  });
+  const schema = S_.object({
+    properties: {
+      isInvoice: S_.boolean(), documentType: S_.enumString({ enum: ['INVOICE', 'CREDIT_NOTE', 'DEBIT_NOTE'] }),
+      supplierName: S_.string(), supplierGSTIN: S_.string(), buyerName: S_.string(), buyerGSTIN: S_.string(),
+      invoiceNumber: S_.string(), invoiceDate: S_.string(), placeOfSupplyStateCode: S_.string(), reverseCharge: S_.boolean(),
+      originalInvoiceNumber: S_.string(), invoiceTotal: S_.number(), lineItems: S_.array({ items: line }), notes: S_.string()
+    },
+    optionalProperties: ['supplierGSTIN', 'buyerName', 'buyerGSTIN', 'placeOfSupplyStateCode', 'reverseCharge', 'originalInvoiceNumber', 'invoiceTotal', 'notes']
+  });
+  return schema;
+}
+async function aiExtractInvoice(file) {
+  const { model } = await aiModel(m => ({ generationConfig: { responseMimeType: 'application/json', responseSchema: invoiceSchema(m.Schema) } }));
+  const prompt = `You extract data from Indian GST invoices. Read the attached document and return JSON only.
+Rules:
+- Copy values exactly as printed. Never invent or calculate values that are not printed; omit a field if it is not on the document.
+- invoiceDate as YYYY-MM-DD. GSTINs are 15 characters, uppercase, no spaces.
+- placeOfSupplyStateCode: the 2-digit state code (e.g. "29") if place of supply is printed.
+- One lineItems entry per item row. gstRate is the percentage number (18 for 18%). taxableValue is the value before tax.
+- If CGST/SGST/IGST amounts are printed per line, include them; otherwise omit.
+- isInvoice=false if the document is not a tax invoice / credit note / debit note.
+- In notes, briefly mention anything unclear or unreadable.`;
+  const data = await fileToBase64(file);
+  const mimeType = file.type || (/\.pdf$/i.test(file.name) ? 'application/pdf' : 'image/jpeg');
+  const result = await model.generateContent([prompt, { inlineData: { data, mimeType } }]);
+  return JSON.parse(result.response.text());
+}
+
+function aiToDraft(x, type) {
+  const own = S.biz.gstin; const sg = String(x.supplierGSTIN || '').toUpperCase().replace(/\s/g, ''); const bg = String(x.buyerGSTIN || '').toUpperCase().replace(/\s/g, '');
+  let detected = null;
+  if (sg && sg === own) detected = 'SALE'; else if (bg && bg === own) detected = 'PURCHASE';
+  const t = detected || type; const isSale = t === 'SALE';
+  const date = parseDate(x.invoiceDate) || '';
+  const slab = rateSlab(date || todayISO());
+  const lines = (x.lineItems || []).map(l => {
+    const hasDecl = [l.cgst, l.sgst, l.igst].some(v => v !== undefined && v !== null);
+    return { description: l.description || '', hsn: String(l.hsn || '').replace(/\s/g, ''), qty: l.quantity ?? '', unitPrice: l.unitPrice ?? '', taxableValue: l.taxableValue ?? '',
+      gstRate: slab.rates.includes(num(l.gstRate)) ? num(l.gstRate) : num(l.gstRate), cess: l.cess ?? '', declared: hasDecl ? { cgst: num(l.cgst), sgst: num(l.sgst), igst: num(l.igst) } : null, _manual: true };
+  });
+  const pos = x.placeOfSupplyStateCode && STATE_CODES[pad(String(x.placeOfSupplyStateCode).slice(0, 2))] ? pad(String(x.placeOfSupplyStateCode).slice(0, 2)) : '';
+  return {
+    type: t, detected, notes: x.notes || '',
+    prefill: { docType: x.documentType || 'INVOICE', invoiceNumber: x.invoiceNumber || '', invoiceDate: date, partyName: (isSale ? x.buyerName : x.supplierName) || '',
+      partyGSTIN: isSale ? bg : sg, placeOfSupply: pos, reverseCharge: !!x.reverseCharge, declaredTotal: x.invoiceTotal ?? '', originalInvoiceNumber: x.originalInvoiceNumber || '',
+      notes: 'Extracted by AI from ' + (S.aiFile?.name || 'uploaded file'), lines: lines.length ? lines : [blankLine()] }
+  };
+}
+function openAIUpload(type) {
+  S.aiFile = null;
+  $('#modal-root').innerHTML = `<div class="modal-back"><div class="modal">
+    <div class="modal-head"><h3>Upload ${type === 'SALE' ? 'sales' : 'purchase'} invoice (AI)</h3><button class="x" data-act="close-modal">×</button></div>
+    <div class="modal-body">
+      <p class="muted">Upload a PDF or photo of the invoice. AI reads it and fills the invoice form — you check every field before saving, and the rules engine validates the numbers.</p>
+      <input type="file" accept="application/pdf,image/png,image/jpeg,image/webp" data-file="ai-invoice">
+      <div class="hint">PDF, JPG, PNG or WEBP · up to 15 MB</div>
+      <div id="ai-status" style="margin-top:12px"></div>
+      <div class="notice warn small" style="margin-top:12px">Free Gemini tier: Google may use uploaded content to improve its products. Use test invoices until the project is on the paid tier.</div>
+    </div>
+    <div class="modal-foot"><button class="btn" data-act="close-modal">Cancel</button><button class="btn primary" data-act="ai-read" data-type="${type}" disabled>Read with AI</button></div></div></div>`;
+}
+async function runAIRead(el) {
+  const file = S.aiFile; if (!file) return; const type = el.dataset.type; const st = $('#ai-status');
+  el.disabled = true; el.textContent = 'Reading…'; st.innerHTML = '<div class="row"><div class="spin" style="width:18px;height:18px;border-width:2px"></div><span class="muted">AI is reading the invoice…</span></div>';
+  try {
+    const x = await aiExtractInvoice(file);
+    if (x.isInvoice === false) { st.innerHTML = `<div class="notice bad">This does not look like a GST invoice.${x.notes ? ' ' + esc(x.notes) : ''}</div>`; el.disabled = false; el.textContent = 'Read with AI'; return; }
+    const d = aiToDraft(x, type);
+    audit('AI_EXTRACTION', 'invoice', null, { fileName: file.name, model: AI_MODEL, invoiceNumber: d.prefill.invoiceNumber });
+    const name = file.name; S.aiFile = null;
+    openInvoice(d.type, null, d.prefill);
+    S.draftAI = { fileName: name, notes: d.notes, switched: d.detected && d.detected !== type ? d.detected : null };
+    renderInvoiceModal();
+  } catch (e) { console.error(e); st.innerHTML = `<div class="notice bad">${esc(aiFriendly(e))}</div>`; el.disabled = false; el.textContent = 'Read with AI'; }
+}
+
+/* ---------- AI assistant ---------- */
+function aiContext() {
+  const p = S.period; const g = gstr3b(p); const tax = o => round2(o.igst + o.cgst + o.sgst + o.cess);
+  const inv = S.invoices.map(i => { const ev = S.evals.get(i.id); return ev && { type: i.type, doc: i.docType, no: i.invoiceNumber, date: i.invoiceDate, period: i.period, party: i.partyName, gstin: i.partyGSTIN || null,
+    taxable: ev.totals.taxableValue, tax: ev.totals.totalTax, total: ev.totals.totalAmount, checks: ev.status, itc: ev.itcStatus, itcReason: ev.itcReason || undefined, gstr2b: ev.reconStatus || undefined }; }).filter(Boolean);
+  return clean({
+    business: { name: S.biz.name, gstin: S.biz.gstin, state: stateName(S.biz.stateCode), registrationType: S.biz.registrationType, filing: S.biz.filingFrequency },
+    today: todayISO(), financialYear: S.fy, selectedPeriod: p, periodStatus: S.periods[p]?.status || 'OPEN',
+    gstr3bSelectedPeriod: { outputTax: g.outputTax, outward31a: g.o31a, rcmInward: g.o31d, eligibleItcNet: g.netItc, itcPendingOrReview: tax(g.itcPending), itcBlocked: tax(g.itcBlocked), itcNotEligible: tax(g.itcNotEligible), rule37Reversal: tax(g.rule37), cashPayable: g.cash },
+    monthly: fyMonths(S.fy).map(m => { const x = gstr3b(m); return { period: m, outputTax: x.outputTax, eligibleItc: x.itcSum, cashPayable: x.cash.total, status: S.periods[m]?.status || 'OPEN' }; }),
+    dueDates: dueDates(p), gstr2bImportedPeriods: [...new Set(S.gstr2b.map(r => r.period))],
+    openIssues: S.issues.filter(i => ['OPEN', 'UNDER_REVIEW'].includes(i.status)).slice(0, 80).map(i => ({ severity: i.severity, type: i.type, invoice: i.invoiceNumber, party: i.partyName, period: i.period, detail: i.description })),
+    unpaidPurchasesRule37: S.invoices.filter(i => i.type === 'PURCHASE' && S.payments[i.id]?.status !== 'PAID' && !i.reverseCharge && i.docType !== 'CREDIT_NOTE').map(i => ({ no: i.invoiceNumber, party: i.partyName, date: i.invoiceDate, payBy: addDays(i.invoiceDate, 180), total: i.totalAmount })),
+    invoices: inv.slice(0, 400), invoicesTruncated: inv.length > 400
+  });
+}
+/* chat history — businesses/{bid}/aiConversations/{id}, private to each user */
+async function loadChats() {
+  if (S.chatList?.bizId === S.biz.id || S.chatListLoading) return;
+  S.chatListLoading = true;
+  try {
+    const snap = await getDocs(query(bizCol('aiConversations'), where('userId', '==', S.user.uid)));
+    S.chatList = { bizId: S.biz.id, items: snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (b.updatedAt?.seconds || 0) - (a.updatedAt?.seconds || 0)) };
+    if (!S.chat && S.chatList.items[0]) openChat(S.chatList.items[0].id, true);
+  } catch (e) { console.error(e); S.chatList = { bizId: S.biz.id, items: [], error: friendly(e) }; }
+  S.chatListLoading = false; if (route() === 'assistant') { render(); scrollChat(); }
+}
+function openChat(id, silent) {
+  const c = S.chatList?.items.find(x => x.id === id); if (!c) return;
+  S.chat = { id: c.id, bizId: S.biz.id, messages: (c.messages || []).map(m => ({ ...m })), session: null, saved: true };
+  if (!silent) { render(); scrollChat(); }
+}
+async function saveChat() {
+  const c = S.chat; if (!c || !c.messages.length) return;
+  const isNew = !c.id; if (isNew) c.id = doc(bizCol('aiConversations')).id;
+  const msgs = c.messages.filter(m => !m.error).map(m => ({ role: m.role, text: m.text })).slice(-100);
+  const data = { userId: S.user.uid, title: (msgs.find(m => m.role === 'user')?.text || 'Chat').slice(0, 80), fy: S.fy, period: S.period, messages: msgs, updatedAt: serverTimestamp() };
+  if (isNew) data.createdAt = serverTimestamp();
+  try {
+    await setDoc(bizRef('aiConversations', c.id), data, { merge: true });
+    const item = { id: c.id, ...data, updatedAt: { seconds: Date.now() / 1000 } };
+    if (S.chatList) S.chatList.items = [item, ...S.chatList.items.filter(x => x.id !== c.id)];
+  } catch (e) { console.error(e); toast('Chat could not be saved: ' + friendly(e) + ' (publish the latest Firestore rules from Setup)', 'err'); }
+}
+async function deleteChat(id) {
+  if (!confirm('Delete this chat?')) return;
+  try { await deleteDoc(bizRef('aiConversations', id)); } catch (e) { return toast(friendly(e), 'err'); }
+  S.chatList.items = S.chatList.items.filter(x => x.id !== id);
+  if (S.chat?.id === id) S.chat = null;
+  render();
+}
+function viewAssistant() {
+  if (S.chatList?.bizId !== S.biz.id) { if (S.chat?.bizId !== S.biz.id) S.chat = null; loadChats(); }
+  const msgs = S.chat?.messages || [];
+  const list = S.chatList?.bizId === S.biz.id ? S.chatList.items : null;
+  const history = `<div class="card" style="padding:12px"><b class="small">Previous chats</b>
+    ${list === null ? '<div class="small muted" style="margin-top:8px">Loading…</div>' : list.length ? list.map(c => `<div class="row" style="gap:4px;margin-top:6px;flex-wrap:nowrap">
+      <button class="btn sm ${S.chat?.id === c.id ? 'primary' : 'ghost'}" style="flex:1;justify-content:flex-start;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0" data-act="ai-open" data-id="${c.id}" title="${esc(c.title)}">${esc(c.title)}</button>
+      <button class="btn sm ghost danger" data-act="ai-delete" data-id="${c.id}" title="Delete">✕</button></div>`).join('') : '<div class="small muted" style="margin-top:8px">No saved chats yet.</div>'}
+    ${S.chatList?.error ? `<div class="small" style="color:var(--bad);margin-top:8px">${esc(S.chatList.error)}</div>` : ''}</div>`;
+  const bubble = m => `<div style="display:flex;${m.role === 'user' ? 'justify-content:flex-end' : ''};margin:8px 0"><div style="max-width:80%;padding:10px 14px;border-radius:12px;white-space:pre-wrap;${m.role === 'user' ? 'background:var(--brand);color:#fff' : m.error ? 'background:var(--bad-soft);color:#8f241c' : 'background:var(--surface-2)'}">${esc(m.text)}</div></div>`;
+  return pageHead('AI GST Assistant', `Answers from your ${esc(S.biz.name)} data · FY ${S.fy} · period ${periodLabel(S.period)}`, `<button class="btn" data-act="ai-reset">New chat</button>`)
+    + `<div class="chat-cols">${history}<div class="card"><div id="chat-log" style="min-height:260px;max-height:55vh;overflow-y:auto">
+      ${msgs.length ? msgs.map(bubble).join('') : `<div class="muted small">Try asking:</div><div class="row" style="margin-top:8px">${['Why is my GST liability this amount?', 'Which invoices have problems?', 'How much ITC do I have and what is pending?', 'Which suppliers must I pay to avoid Rule 37 reversal?', 'Summarise this financial year so far.'].map(q => `<button class="btn sm" data-act="ai-ask" data-q="${esc(q)}">${q}</button>`).join('')}</div>`}
+      ${S.chat?.busy ? '<div class="row" style="margin:8px 0"><div class="spin" style="width:16px;height:16px;border-width:2px"></div><span class="muted small">Thinking…</span></div>' : ''}</div>
+      <form data-form="ai-chat" class="row" style="margin-top:12px"><input name="q" placeholder="Ask about your GST data…" autocomplete="off" style="flex:1;width:auto" ${S.chat?.busy ? 'disabled' : ''}><button class="btn primary" ${S.chat?.busy ? 'disabled' : ''}>Send</button></form>
+      <div class="small faint" style="margin-top:8px">Figures come from the TaxPilot rules engine; the AI explains them. Free Gemini tier: Google may use conversations to improve its products. Chats are saved and visible only to you.</div></div></div>`;
+}
+async function aiAsk(q) {
+  q = String(q || '').trim(); if (!q || S.chat?.busy) return;
+  if (!S.chat || S.chat.bizId !== S.biz.id) S.chat = { id: null, messages: [], session: null, bizId: S.biz.id };
+  // rebuild the session (fresh data snapshot, same history) if data context changed
+  const ctxKey = `${S.fy}|${S.period}|${S.invoices.length}|${S.issues.length}`;
+  if (S.chat.ctxKey !== ctxKey) { S.chat.session = null; S.chat.ctxKey = ctxKey; }
+  const prior = S.chat.messages.filter(m => !m.error).map(m => ({ role: m.role === 'user' ? 'user' : 'model', parts: [{ text: m.text }] }));
+  S.chat.messages.push({ role: 'user', text: q }); S.chat.busy = true; render(); scrollChat();
+  try {
+    if (!S.chat.session) {
+      const { model } = await aiModel({ systemInstruction: `You are TaxPilot AI, a GST compliance assistant for an Indian business. For anything about this business's numbers, invoices, issues or returns, answer ONLY from the JSON data below, which was produced by TaxPilot's deterministic GST rules engine.
+- For general GST concept questions (e.g. what GSTR-3B is, what reverse charge means), explain briefly in simple English, and relate it to this business's data where useful.
+- Never invent invoices or amounts. Do not recalculate tax differently from the data; explain the figures given.
+- Use Indian Rupees (₹) with Indian digit grouping. Mention invoice numbers when relevant.
+- If the data does not contain the answer, say so and suggest where in TaxPilot to look.
+- Keep answers short and practical. Plain text, no markdown tables.
+- You are not a substitute for a Chartered Accountant; for legal interpretation suggest confirming with a CA.
+DATA:
+${JSON.stringify(aiContext())}` });
+      S.chat.session = model.startChat({ history: prior });
+    }
+    // stream the answer so text appears as it is generated
+    const r = await withTimeout(S.chat.session.sendMessageStream(q), 60000, 'The AI did not respond within 60 seconds. Please try again.');
+    const msg = { role: 'model', text: '' }; S.chat.messages.push(msg);
+    for await (const chunk of r.stream) {
+      msg.text += chunk.text();
+      if (route() === 'assistant') { S.chat.busy = false; render(); S.chat.busy = true; scrollChat(); }
+    }
+    if (!msg.text.trim()) msg.text = (await r.response).text() || 'No answer was returned. Please rephrase the question.';
+  } catch (e) {
+    console.error(e);
+    const last = S.chat.messages[S.chat.messages.length - 1];
+    if (last?.role === 'model' && !last.text) S.chat.messages.pop();
+    S.chat.messages.push({ role: 'model', text: aiFriendly(e), error: true }); S.chat.session = null;
+  }
+  S.chat.busy = false; render(); scrollChat();
+  await saveChat(); if (route() === 'assistant') render();
+}
+function scrollChat() { const l = $('#chat-log'); if (l) l.scrollTop = l.scrollHeight; }
+
+/* =====================================================================
+   UTILITIES
+   ===================================================================== */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const pad = n => String(n).padStart(2, '0');
+const num = v => { const n = typeof v === 'number' ? v : parseFloat(String(v ?? '').replace(/[₹,\s]/g, '')); return Number.isFinite(n) ? n : 0; };
+const round2 = n => Math.round((n + Math.sign(n) * Number.EPSILON) * 100) / 100;
+const inr = n => '₹' + Number(n || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const inr0 = n => (n < 0 ? '-₹' : '₹') + Math.abs(Math.round(n || 0)).toLocaleString('en-IN');
+const todayISO = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
+const isoOf = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const addDays = (iso, n) => { const d = new Date(iso + 'T00:00:00'); d.setDate(d.getDate() + n); return isoOf(d); };
+const daysBetween = (a, b) => Math.round((Date.parse(b + 'T00:00:00') - Date.parse(a + 'T00:00:00')) / 86400000);
+const fmtDate = iso => { if (!iso) return ''; const [y, m, d] = iso.split('-'); return `${d}-${m}-${y}`; };
+const normNo = s => String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+const clean = o => JSON.parse(JSON.stringify(o, (k, v) => (v === undefined ? null : v)));
+const initials = s => (s || '?').split(/[\s@.]+/).filter(Boolean).slice(0, 2).map(x => x[0].toUpperCase()).join('');
+function fyOf(iso) { const y = +iso.slice(0, 4), m = +iso.slice(5, 7); const s = m >= 4 ? y : y - 1; return `${s}-${pad((s + 1) % 100)}`; }
+function fyMonths(fy) { const s = +fy.slice(0, 4); const out = []; for (let i = 0; i < 12; i++) { const m = ((3 + i) % 12) + 1; out.push(`${m >= 4 ? s : s + 1}-${pad(m)}`); } return out; }
+function periodLabel(p) { if (!p) return ''; const [y, m] = p.split('-'); return new Date(+y, +m - 1, 1).toLocaleString('en-IN', { month: 'short', year: 'numeric' }); }
+function nextMonth(p) { let [y, m] = p.split('-').map(Number); m++; if (m > 12) { m = 1; y++; } return `${y}-${pad(m)}`; }
+function prevMonth(p) { let [y, m] = p.split('-').map(Number); m--; if (m < 1) { m = 12; y--; } return `${y}-${pad(m)}`; }
+function tsStr(ts) { if (!ts) return ''; const d = ts.toDate ? ts.toDate() : new Date(ts); return d.toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }); }
+function hash(s) { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return (h >>> 0).toString(36); }
+function parseDate(v) {
+  if (v instanceof Date && !isNaN(v)) return isoOf(v);
+  const s = String(v ?? '').trim(); let m;
+  const ok = (y, mo, d) => { const dt = new Date(+y, +mo - 1, +d); return dt.getFullYear() === +y && dt.getMonth() === +mo - 1 && dt.getDate() === +d ? isoOf(dt) : null; };
+  if ((m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/))) return ok(m[1], m[2], m[3]);
+  if ((m = s.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})$/))) return ok(m[3], m[2], m[1]); // DD-MM-YYYY (Indian)
+  const MON = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12 };
+  if ((m = s.match(/^(\d{1,2})[-\/ ]([A-Za-z]{3})[A-Za-z]*[-\/ ](\d{2,4})$/)) && MON[m[2].toLowerCase()]) return ok(m[3].length === 2 ? '20' + m[3] : m[3], MON[m[2].toLowerCase()], m[1]);
+  return null;
+}
+function download(name, text, type = 'text/plain') {
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name;
+  document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+}
+function toCSV(rows) { return rows.map(r => r.map(c => { const s = String(c ?? ''); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; }).join(',')).join('\n'); }
+function parseCSV(text) {
+  const rows = []; let row = [], f = '', q = false;
+  text = text.replace(/^﻿/, '');
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) { if (c === '"') { if (text[i + 1] === '"') { f += '"'; i++; } else q = false; } else f += c; }
+    else if (c === '"') q = true;
+    else if (c === ',') { row.push(f); f = ''; }
+    else if (c === '\n' || c === '\r') { if (c === '\r' && text[i + 1] === '\n') i++; row.push(f); rows.push(row); row = []; f = ''; }
+    else f += c;
+  }
+  if (f !== '' || row.length) { row.push(f); rows.push(row); }
+  const nonEmpty = rows.filter(r => r.some(c => String(c).trim() !== ''));
+  if (!nonEmpty.length) return [];
+  const head = nonEmpty[0].map(h => h.trim());
+  return nonEmpty.slice(1).map(r => Object.fromEntries(head.map((h, i) => [h, (r[i] ?? '').trim()])));
+}
+function loadScript(src) {
+  return new Promise((res, rej) => { if ($(`script[src="${src}"]`)) return res(); const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = () => rej(new Error('Could not load ' + src)); document.head.appendChild(s); });
+}
+async function readSheet(file) {
+  if (/\.csv$/i.test(file.name)) return parseCSV(await file.text());
+  await loadScript('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js');
+  const wb = window.XLSX.read(await file.arrayBuffer(), { cellDates: true });
+  return window.XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: '', raw: true });
+}
+function toast(msg, type = 'ok') {
+  const d = document.createElement('div'); d.className = type; d.textContent = msg; $('#toast').appendChild(d);
+  setTimeout(() => d.remove(), type === 'err' ? 7000 : 3500);
+}
+function friendly(e) {
+  const c = e?.code || '';
+  const map = {
+    'auth/invalid-credential': 'Incorrect email or password.', 'auth/wrong-password': 'Incorrect email or password.', 'auth/user-not-found': 'No account with this email.',
+    'auth/email-already-in-use': 'An account with this email already exists — sign in instead.', 'auth/weak-password': 'Password must be at least 6 characters.',
+    'auth/invalid-email': 'Please enter a valid email address.', 'auth/too-many-requests': 'Too many attempts. Please wait a few minutes and try again.',
+    'auth/operation-not-allowed': 'Email/Password sign-in is not enabled. Enable it in Firebase Console → Authentication → Sign-in method.',
+    'auth/configuration-not-found': 'Firebase Authentication is not set up. Open Firebase Console → Authentication → Get started.',
+    'auth/unauthorized-domain': 'This domain is not authorised. Add it in Firebase Console → Authentication → Settings → Authorized domains.',
+    'auth/network-request-failed': 'Network error — check your internet connection.',
+    'permission-denied': 'Permission denied. Make sure the Firestore rules from the Setup page are published, and that your role allows this action.',
+    'unavailable': 'Cannot reach the database — check your connection.',
+    'failed-precondition': 'Database not ready. Create the Firestore database in Firebase Console (see Setup).',
+    'not-found': 'Firestore database not found. Create it in Firebase Console → Firestore Database.'
+  };
+  return map[c] || e?.message || String(e);
+}
+
+/* =====================================================================
+   GST MASTER DATA
+   ===================================================================== */
+const STATE_CODES = {
+  '01': 'Jammu and Kashmir', '02': 'Himachal Pradesh', '03': 'Punjab', '04': 'Chandigarh', '05': 'Uttarakhand', '06': 'Haryana',
+  '07': 'Delhi', '08': 'Rajasthan', '09': 'Uttar Pradesh', '10': 'Bihar', '11': 'Sikkim', '12': 'Arunachal Pradesh', '13': 'Nagaland',
+  '14': 'Manipur', '15': 'Mizoram', '16': 'Tripura', '17': 'Meghalaya', '18': 'Assam', '19': 'West Bengal', '20': 'Jharkhand',
+  '21': 'Odisha', '22': 'Chhattisgarh', '23': 'Madhya Pradesh', '24': 'Gujarat', '26': 'Dadra and Nagar Haveli and Daman and Diu',
+  '27': 'Maharashtra', '29': 'Karnataka', '30': 'Goa', '31': 'Lakshadweep', '32': 'Kerala', '33': 'Tamil Nadu', '34': 'Puducherry',
+  '35': 'Andaman and Nicobar Islands', '36': 'Telangana', '37': 'Andhra Pradesh', '38': 'Ladakh', '97': 'Other Territory'
+};
+// QRMP: states whose GSTR-3B quarterly due date is the 22nd (others: 24th)
+const QRMP_22 = ['22', '23', '24', '26', '27', '29', '30', '31', '32', '33', '34', '35', '36', '37'];
+const stateName = c => STATE_CODES[c] ? `${c} - ${STATE_CODES[c]}` : (c || '');
+const stateOptions = (sel, blank) => (blank ? `<option value="">${blank}</option>` : '') + Object.entries(STATE_CODES).sort((a, b) => a[0].localeCompare(b[0])).map(([c, n]) => `<option value="${c}" ${c === sel ? 'selected' : ''}>${c} - ${esc(n)}</option>`).join('');
+
+const GST_CHARS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+function gstinCheckChar(first14) {
+  let sum = 0;
+  for (let i = 0; i < 14; i++) { const p = GST_CHARS.indexOf(first14[i]) * (i % 2 === 0 ? 1 : 2); sum += Math.floor(p / 36) + (p % 36); }
+  return GST_CHARS[(36 - (sum % 36)) % 36];
+}
+function validateGSTIN(raw) {
+  const g = String(raw || '').trim().toUpperCase();
+  if (!g) return { ok: false, empty: true, error: 'GSTIN is empty' };
+  if (g.length !== 15) return { ok: false, error: 'must be 15 characters' };
+  if (!/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/.test(g)) return { ok: false, error: 'invalid format' };
+  if (!STATE_CODES[g.slice(0, 2)]) return { ok: false, error: `unknown state code ${g.slice(0, 2)}` };
+  if (gstinCheckChar(g.slice(0, 14)) !== g[14]) return { ok: false, error: 'checksum digit does not match (typo?)' };
+  return { ok: true, gstin: g, stateCode: g.slice(0, 2), state: STATE_CODES[g.slice(0, 2)], pan: g.slice(2, 12) };
+}
+const validPAN = p => /^[A-Z]{5}[0-9]{4}[A-Z]$/.test(String(p || '').toUpperCase());
+
+/* Effective-dated GST rate master. Verify against current CBIC notifications when rates change.
+   reviewRates: slabs that remain legal only for limited goods after the change — flagged for review. */
+const RATE_MASTER = [
+  { validFrom: '2017-07-01', validTo: '2025-09-21', rates: [0, 0.1, 0.25, 1, 1.5, 3, 5, 6, 7.5, 12, 18, 28], reviewRates: [] },
+  { validFrom: '2025-09-22', validTo: null, rates: [0, 0.1, 0.25, 1, 1.5, 3, 5, 6, 7.5, 12, 18, 28, 40], reviewRates: [12, 28] }
+];
+const rateSlab = d => RATE_MASTER.find(r => d >= r.validFrom && (!r.validTo || d <= r.validTo)) || RATE_MASTER[RATE_MASTER.length - 1];
+const B2CL_LIMIT = 100000; // inter-state B2C invoice value above which B2CL applies
+const ENGINE_VERSION = '1.0.0';
+
+const ROLE_LABEL = { OWNER: 'Owner', ADMIN: 'Admin', ACCOUNTANT: 'Accountant', CA: 'Chartered Accountant', VIEWER: 'Viewer' };
+const CAN = { write: ['OWNER', 'ADMIN', 'ACCOUNTANT'], approve: ['OWNER', 'CA'], team: ['OWNER'], editBiz: ['OWNER', 'ADMIN'], issues: ['OWNER', 'ADMIN', 'ACCOUNTANT', 'CA'] };
+const can = k => CAN[k].includes(S.role);
+const DOC_LABEL = { INVOICE: 'Invoice', CREDIT_NOTE: 'Credit Note', DEBIT_NOTE: 'Debit Note' };
+const ITC_LABEL = { ELIGIBLE: 'Eligible', POTENTIALLY_ELIGIBLE: 'Potentially eligible', NEEDS_REVIEW: 'Needs review', MISMATCH: 'Mismatch', BLOCKED: 'Blocked', NOT_ELIGIBLE: 'Not eligible' };
+const ITC_BADGE = { ELIGIBLE: 'b-ok', POTENTIALLY_ELIGIBLE: 'b-info', NEEDS_REVIEW: 'b-warn', MISMATCH: 'b-bad', BLOCKED: 'b-bad', NOT_ELIGIBLE: '' };
+const RECON_LABEL = { MATCHED: 'Matched', AMOUNT_MISMATCH: 'Amount mismatch', MISSING_IN_2B: 'Missing in 2B', NOT_CHECKED: 'Not checked', NOT_APPLICABLE: 'N/A (RCM)' };
+const RECON_BADGE = { MATCHED: 'b-ok', AMOUNT_MISMATCH: 'b-bad', MISSING_IN_2B: 'b-warn', NOT_CHECKED: '', NOT_APPLICABLE: '' };
+const SEV_BADGE = { HIGH: 'b-bad', MEDIUM: 'b-warn', LOW: 'b-info' };
+const STATUS_BADGE = { VALID: ['b-ok', 'Valid'], REVIEW: ['b-warn', 'Review'], HAS_ISSUES: ['b-bad', 'Issues'] };
+const ISSUE_STATUS_BADGE = { OPEN: 'b-bad', UNDER_REVIEW: 'b-warn', RESOLVED: 'b-ok', IGNORED: '' };
+
+/* =====================================================================
+   GST RULES ENGINE — deterministic. AI never calculates tax.
+   ===================================================================== */
+const sgn = inv => (inv.docType === 'CREDIT_NOTE' ? -1 : 1);
+const itcDeadline = fy => `${+fy.slice(0, 4) + 1}-11-30`; // Section 16(4)
+const reconKey = (docType, gstin, no) => `${docType || 'INVOICE'}|${gstin}|${normNo(no)}`;
+
+function resolveStates(inv, biz) {
+  const party = validateGSTIN(inv.partyGSTIN);
+  let supplier, pos;
+  if (inv.type === 'SALE') { supplier = biz.stateCode; pos = inv.placeOfSupply || (party.ok ? party.stateCode : biz.stateCode); }
+  else { supplier = party.ok ? party.stateCode : (inv.supplierState || biz.stateCode); pos = inv.placeOfSupply || biz.stateCode; }
+  return { supplier, pos, inter: supplier !== pos, party };
+}
+
+function evaluateInvoice(inv, ctx) {
+  const { biz } = ctx; const isSale = inv.type === 'SALE'; const isComp = biz.registrationType === 'COMPOSITION';
+  const issues = [];
+  const add = (code, severity, description) => {
+    const ex = issues.find(i => i.code === code);
+    if (ex) ex.description += ' ' + description; else issues.push({ code, severity, description });
+  };
+  const st = resolveStates(inv, biz);
+  const date = inv.invoiceDate || ctx.today;
+
+  const lines = (inv.lines || []).map(l => {
+    const taxable = round2(num(l.taxableValue)); const rate = num(l.gstRate);
+    const tax = (isSale && isComp) ? 0 : round2(taxable * rate / 100);
+    let cgst = 0, sgst = 0, igst = 0;
+    if (st.inter) igst = tax; else { cgst = round2(tax / 2); sgst = round2(tax - cgst); }
+    return { description: l.description || '', hsn: String(l.hsn || '').trim(), qty: num(l.qty), unitPrice: num(l.unitPrice),
+      taxableValue: taxable, gstRate: rate, cgst, sgst, igst, cess: round2(num(l.cess)), declared: l.declared || null };
+  });
+  const t = lines.reduce((a, l) => { for (const k of ['taxableValue', 'cgst', 'sgst', 'igst', 'cess']) a[k] += l[k]; return a; }, { taxableValue: 0, cgst: 0, sgst: 0, igst: 0, cess: 0 });
+  for (const k in t) t[k] = round2(t[k]);
+  t.totalTax = round2(t.cgst + t.sgst + t.igst + t.cess);
+  t.totalAmount = round2(t.taxableValue + t.totalTax);
+
+  // --- header validations
+  if (!inv.invoiceNumber) add('MISSING_INVOICE_NUMBER', 'HIGH', 'Invoice number is missing.');
+  else if (String(inv.invoiceNumber).length > 16 || !/^[A-Za-z0-9\/-]+$/.test(inv.invoiceNumber))
+    add('INVALID_INVOICE_NUMBER', 'MEDIUM', 'Invoice number should be at most 16 characters using only letters, digits, "/" and "-" (Rule 46).');
+  if (!inv.invoiceDate) add('MISSING_DATE', 'HIGH', 'Invoice date is missing.');
+  else if (inv.invoiceDate > ctx.today) add('FUTURE_DATE', 'HIGH', 'Invoice date is in the future.');
+  if (!String(inv.partyName || '').trim()) add('MISSING_PARTY', 'MEDIUM', `${isSale ? 'Customer' : 'Supplier'} name is missing.`);
+  if (inv.partyGSTIN) {
+    if (!st.party.ok) add('INVALID_GSTIN', 'HIGH', `${isSale ? 'Customer' : 'Supplier'} GSTIN ${inv.partyGSTIN}: ${st.party.error}.`);
+    else if (st.party.gstin === biz.gstin) add('OWN_GSTIN', 'HIGH', 'Party GSTIN is the same as your own GSTIN.');
+  } else if (!isSale && !inv.reverseCharge) add('MISSING_SUPPLIER_GSTIN', 'MEDIUM', 'Supplier GSTIN is missing — ITC cannot be claimed without it.');
+  if ((inv.docType === 'CREDIT_NOTE' || inv.docType === 'DEBIT_NOTE') && !inv.originalInvoiceNumber)
+    add('MISSING_ORIGINAL_INVOICE', 'LOW', 'Original invoice number is not recorded for this note.');
+  if (!lines.length) add('NO_LINES', 'HIGH', 'Invoice has no line items.');
+  if (isSale && isComp && lines.some(l => l.gstRate > 0))
+    add('COMPOSITION_TAX', 'HIGH', 'Composition taxpayers cannot collect GST — issue a Bill of Supply with 0% tax.');
+
+  // --- line validations
+  const slab = rateSlab(date);
+  lines.forEach((l, i) => {
+    const n = `Line ${i + 1}:`;
+    if (l.taxableValue <= 0) add('ZERO_VALUE', 'HIGH', `${n} taxable value must be greater than zero.`);
+    if (!slab.rates.includes(l.gstRate)) add('INVALID_RATE', 'HIGH', `${n} ${l.gstRate}% is not a valid GST rate on ${fmtDate(date)}.`);
+    else if (slab.reviewRates.includes(l.gstRate)) add('RATE_REVIEW', 'MEDIUM', `${n} the ${l.gstRate}% slab was withdrawn for most goods from 22-09-2025 — verify the rate for HSN ${l.hsn || '(not given)'}.`);
+    if (!l.hsn) add('HSN_MISSING', 'LOW', `${n} HSN/SAC code missing.`);
+    else if (!/^\d{4,8}$/.test(l.hsn)) add('HSN_FORMAT', 'LOW', `${n} HSN/SAC "${l.hsn}" should be 4–8 digits.`);
+    if (l.qty > 0 && l.unitPrice > 0 && Math.abs(round2(l.qty * l.unitPrice) - l.taxableValue) > 1)
+      add('VALUE_CHECK', 'LOW', `${n} taxable value ${inr(l.taxableValue)} differs from qty × price ${inr(l.qty * l.unitPrice)} (discount?).`);
+    if (l.declared) {
+      const dI = num(l.declared.igst), dCS = num(l.declared.cgst) + num(l.declared.sgst);
+      if (st.inter && dCS > 0) add('TAX_TYPE_MISMATCH', 'HIGH', `${n} CGST/SGST charged on an inter-state supply (IGST applies).`);
+      else if (!st.inter && dI > 0) add('TAX_TYPE_MISMATCH', 'HIGH', `${n} IGST charged on an intra-state supply (CGST + SGST apply).`);
+      const calc = round2(l.cgst + l.sgst + l.igst);
+      if (Math.abs(round2(dI + dCS) - calc) > 1) add('TAX_AMOUNT_MISMATCH', 'HIGH', `${n} invoice shows tax ${inr(dI + dCS)}, but ${l.gstRate}% of ${inr(l.taxableValue)} = ${inr(calc)}.`);
+    }
+  });
+  if (String(inv.declaredTotal ?? '').trim() !== '' && Math.abs(num(inv.declaredTotal) - t.totalAmount) > 1)
+    add('TOTAL_MISMATCH', 'MEDIUM', `Invoice total ${inr(num(inv.declaredTotal))} differs from computed total ${inr(t.totalAmount)}.`);
+
+  // --- duplicate detection (same FY)
+  const key = normNo(inv.invoiceNumber);
+  if (key && inv.invoiceDate) {
+    const fy = fyOf(inv.invoiceDate);
+    const dup = ctx.invoices.find(o => o.id !== inv.id && o.type === inv.type && (o.docType || 'INVOICE') === (inv.docType || 'INVOICE')
+      && o.invoiceDate && fyOf(o.invoiceDate) === fy && normNo(o.invoiceNumber) === key
+      && (isSale || (inv.partyGSTIN ? (o.partyGSTIN || '') === inv.partyGSTIN
+        : (!o.partyGSTIN && String(o.partyName || '').trim().toLowerCase() === String(inv.partyName || '').trim().toLowerCase()))));
+    if (dup) add('DUPLICATE_INVOICE', 'HIGH', `Possible duplicate of ${dup.invoiceNumber} dated ${fmtDate(dup.invoiceDate)}${dup.partyName ? ' (' + dup.partyName + ')' : ''}.`);
+  }
+
+  // --- purchases: GSTR-2B reconciliation + ITC eligibility
+  let itcStatus = null, itcReason = '', reconStatus = null, recon = null;
+  if (!isSale) {
+    const bookTax = round2(t.igst + t.cgst + t.sgst);
+    if (inv.reverseCharge) reconStatus = 'NOT_APPLICABLE';
+    else if (st.party.ok) {
+      const row = ctx.twoB.get(reconKey(inv.docType, st.party.gstin, inv.invoiceNumber));
+      if (row) {
+        const rowTax = round2(num(row.igst) + num(row.cgst) + num(row.sgst));
+        recon = { taxableValue: num(row.taxableValue), tax: rowTax, period: row.period };
+        const ok = Math.abs(rowTax - bookTax) <= 1 && Math.abs(num(row.taxableValue) - t.taxableValue) <= 1;
+        reconStatus = ok ? 'MATCHED' : 'AMOUNT_MISMATCH';
+        if (!ok) add('RECON_MISMATCH', 'HIGH', `GSTR-2B (${periodLabel(row.period)}) shows taxable ${inr(row.taxableValue)} / tax ${inr(rowTax)}; books show ${inr(t.taxableValue)} / ${inr(bookTax)}.`);
+      } else if (ctx.twoBPeriods.has(inv.period)) {
+        reconStatus = 'MISSING_IN_2B';
+        add('MISSING_IN_2B', 'MEDIUM', `Not found in GSTR-2B for ${periodLabel(inv.period)} — supplier may not have filed GSTR-1, or invoice details differ.`);
+      } else reconStatus = 'NOT_CHECKED';
+    } else reconStatus = 'NOT_CHECKED';
+
+    const pay = ctx.payments[inv.id] || {};
+    const paid = pay.status === 'PAID';
+    const rule37Due = inv.invoiceDate ? addDays(inv.invoiceDate, 180) : null;
+    const claimed = ['APPROVED', 'FILED'].includes(ctx.periods[inv.period]?.status);
+    const deadline = inv.invoiceDate ? itcDeadline(fyOf(inv.invoiceDate)) : null;
+    const hasDup = issues.some(i => i.code === 'DUPLICATE_INVOICE');
+
+    if (isComp) { itcStatus = 'NOT_ELIGIBLE'; itcReason = 'Composition taxpayers cannot claim ITC.'; }
+    else if (inv.itcCategory === 'PERSONAL') { itcStatus = 'NOT_ELIGIBLE'; itcReason = 'Not used for business.'; }
+    else if (inv.itcCategory === 'BLOCKED') { itcStatus = 'BLOCKED'; itcReason = 'Blocked credit under Section 17(5).'; }
+    else if (!inv.reverseCharge && !st.party.ok) { itcStatus = 'NOT_ELIGIBLE'; itcReason = 'A valid supplier GSTIN is required.'; }
+    else if (!claimed && deadline && ctx.today > deadline) {
+      itcStatus = 'NOT_ELIGIBLE'; itcReason = `Time-barred under Section 16(4) — deadline was ${fmtDate(deadline)}.`;
+      add('ITC_TIME_BARRED', 'HIGH', itcReason);
+    }
+    else if (!paid && rule37Due && ctx.today > rule37Due) {
+      itcStatus = 'NEEDS_REVIEW'; itcReason = `Unpaid beyond 180 days (due ${fmtDate(rule37Due)}) — ITC must be reversed under Rule 37 until paid.`;
+      add('RULE_37', 'HIGH', itcReason);
+    }
+    else if (hasDup) { itcStatus = 'NEEDS_REVIEW'; itcReason = 'Possible duplicate invoice.'; }
+    else if (inv.reverseCharge) { itcStatus = 'ELIGIBLE'; itcReason = 'Reverse charge — claim after paying the tax in cash.'; }
+    else if (reconStatus === 'MATCHED') { itcStatus = 'ELIGIBLE'; itcReason = 'Matched with GSTR-2B.'; }
+    else if (reconStatus === 'AMOUNT_MISMATCH') { itcStatus = 'MISMATCH'; itcReason = 'Amounts differ from GSTR-2B.'; }
+    else if (reconStatus === 'MISSING_IN_2B') { itcStatus = 'NEEDS_REVIEW'; itcReason = 'Not reflected in GSTR-2B (Section 16(2)(aa)).'; }
+    else { itcStatus = 'POTENTIALLY_ELIGIBLE'; itcReason = 'Awaiting GSTR-2B for this period.'; }
+
+    if (!paid && rule37Due && itcStatus !== 'NEEDS_REVIEW' && ctx.today <= rule37Due && daysBetween(ctx.today, rule37Due) <= 30)
+      add('RULE_37_DUE_SOON', 'MEDIUM', `Supplier payment due by ${fmtDate(rule37Due)} to avoid ITC reversal under Rule 37.`);
+  }
+
+  const status = issues.some(i => i.severity === 'HIGH') ? 'HAS_ISSUES' : issues.some(i => i.severity === 'MEDIUM') ? 'REVIEW' : 'VALID';
+  return { lines, totals: t, placeOfSupply: st.pos, supplierState: st.supplier, interState: st.inter, issues, itcStatus, itcReason, reconStatus, recon, status };
+}
+
+function evalSig(ev) {
+  return hash(JSON.stringify([ev.totals, ev.placeOfSupply, ev.status, ev.itcStatus, ev.itcReason, ev.reconStatus, ev.issues.map(i => i.code + i.severity + i.description)]));
+}
+
+function engineCtx(extra = {}) {
+  const twoB = new Map(); const twoBPeriods = new Set();
+  for (const r of S.gstr2b) { twoB.set(reconKey(r.docType, r.supplierGSTIN, r.invoiceNumber), r); twoBPeriods.add(r.period); }
+  return { biz: S.biz, invoices: [...S.invoices], twoB, twoBPeriods, periods: S.periods, payments: { ...S.payments }, today: todayISO(), ...extra };
+}
+
+/* ---------- ITC set-off (IGST credit first, CGST↛SGST) ---------- */
+function setOff(liab, credit) {
+  const L = { ...liab }, C = { ...credit }, used = [];
+  const use = (c, l) => { const a = round2(Math.min(C[c], L[l])); if (a > 0) { C[c] = round2(C[c] - a); L[l] = round2(L[l] - a); used.push({ from: c, to: l, amount: a }); } };
+  use('igst', 'igst'); use('igst', 'cgst'); use('igst', 'sgst');
+  use('cgst', 'cgst'); use('cgst', 'igst');
+  use('sgst', 'sgst'); use('sgst', 'igst');
+  use('cess', 'cess');
+  return { cash: L, carryForward: C, used };
+}
+
+const zero = () => ({ taxableValue: 0, igst: 0, cgst: 0, sgst: 0, cess: 0 });
+const acc = (a, t, s = 1) => { for (const k of ['taxableValue', 'igst', 'cgst', 'sgst', 'cess']) a[k] = round2(a[k] + s * (t[k] || 0)); return a; };
+const pos0 = o => { const r = {}; for (const k in o) r[k] = Math.max(0, o[k]); return r; };
+
+function gstr3b(period) {
+  const r = { o31a: zero(), o31b: zero(), o31c: zero(), o31d: zero(), itcRcm: zero(), itcOther: zero(), itcPending: zero(), itcBlocked: zero(), itcNotEligible: zero(), rule37: zero() };
+  for (const inv of S.invoices) {
+    const ev = S.evals.get(inv.id); if (!ev) continue; const s = sgn(inv);
+    if (inv.period === period && inv.type === 'SALE') {
+      if (inv.reverseCharge) continue; // tax payable by recipient
+      for (const l of ev.lines) {
+        if (l.gstRate === 0) acc(r.o31c, { taxableValue: l.taxableValue }, s);
+        else acc(r.o31a, l, s);
+      }
+    }
+    if (inv.period === period && inv.type === 'PURCHASE') {
+      if (inv.reverseCharge) acc(r.o31d, ev.totals, s);
+      const bucket = { ELIGIBLE: inv.reverseCharge ? r.itcRcm : r.itcOther, POTENTIALLY_ELIGIBLE: r.itcPending, NEEDS_REVIEW: r.itcPending, MISMATCH: r.itcPending, BLOCKED: r.itcBlocked, NOT_ELIGIBLE: r.itcNotEligible }[ev.itcStatus];
+      if (bucket) acc(bucket, ev.totals, s);
+    }
+    // Rule 37: ITC claimed in an approved/filed period whose supplier was not paid within 180 days
+    // is reversed once, in the return for the month in which the 180 days expire.
+    if (inv.type === 'PURCHASE' && inv.invoiceDate && inv.itcStatus === 'ELIGIBLE' && !inv.reverseCharge
+      && ['APPROVED', 'FILED'].includes(S.periods[inv.period]?.status)) {
+      const due = addDays(inv.invoiceDate, 180); const first = addDays(due, 1); const pay = S.payments[inv.id];
+      const paidInTime = pay?.status === 'PAID' && pay.paidDate && pay.paidDate <= due;
+      if (!paidInTime && first.slice(0, 7) === period && first <= todayISO()) acc(r.rule37, ev.totals, s);
+    }
+  }
+  const itcTotal = acc(acc(zero(), r.itcRcm), r.itcOther);
+  const netItc = pos0(acc({ ...itcTotal }, r.rule37, -1));
+  const liability = pos0({ igst: r.o31a.igst, cgst: r.o31a.cgst, sgst: r.o31a.sgst, cess: r.o31a.cess });
+  const so = setOff(liability, { igst: netItc.igst, cgst: netItc.cgst, sgst: netItc.sgst, cess: netItc.cess });
+  const rcmCash = pos0({ igst: r.o31d.igst, cgst: r.o31d.cgst, sgst: r.o31d.sgst, cess: r.o31d.cess });
+  const cash = {}; for (const k of ['igst', 'cgst', 'sgst', 'cess']) cash[k] = round2(so.cash[k] + rcmCash[k]);
+  cash.total = round2(cash.igst + cash.cgst + cash.sgst + cash.cess);
+  const outputTax = round2(r.o31a.igst + r.o31a.cgst + r.o31a.sgst + r.o31a.cess);
+  const itcSum = round2(netItc.igst + netItc.cgst + netItc.sgst + netItc.cess);
+  return { ...r, itcTotal, netItc, liability, setOff: so, rcmCash, cash, outputTax, itcSum };
+}
+
+/* =====================================================================
+   GSTR-1 GOVERNMENT-FORMAT JSON — for real upload via the GST portal's own
+   "Returns Offline Tool" (gst.gov.in), NOT the same as the "Export JSON"
+   button below, which is TaxPilot's own summary for your own reference only.
+   Field names (ctin, inv, inum, idt, val, pos, rchrg, inv_typ, itms, itm_det,
+   txval/rt/iamt/camt/samt/csamt, b2cs's sply_ty/pos/typ/rt, cdnr's ntty/
+   nt_num/nt_dt) verified against GSTN's published schema and GSP technical
+   docs. B2B/B2CL/B2CS/CDNR/CDNUR are built directly from each invoice's own
+   evaluated line items (S.evals), grouped by GST rate per invoice — the
+   internal gstr1() below only keeps one aggregate total per invoice, which
+   loses per-rate detail whenever an invoice mixes multiple GST rates.
+   IMPORTANT: run the exported file through the portal's own offline tool
+   validation before relying on it for an actual filing — this hasn't been
+   tested against a live upload, only built from documented field specs. */
+function buildGstr1GovtJson(period) {
+  const sales = S.invoices.filter(i => i.type === 'SALE' && i.period === period);
+  const b2bMap = new Map();    // ctin -> [{ inum, idt, val, pos, rchrg, inv_typ, itms }]
+  const b2cl = [];
+  const b2csMap = new Map();   // pos|rate -> aggregate row
+  const cdnrMap = new Map();   // ctin -> [{ ntty, nt_num, nt_dt, val, pos, itms }]
+  const cdnur = [];
+  const hsnMap = new Map();    // hsn|rate -> aggregate row
+  let docCount = 0;
+
+  const itemsByRate = (lines) => {
+    const byRate = new Map();
+    for (const l of lines) {
+      const acc = byRate.get(l.gstRate) || { txval: 0, iamt: 0, camt: 0, samt: 0, csamt: 0 };
+      acc.txval += l.taxableValue; acc.iamt += l.igst; acc.camt += l.cgst; acc.samt += l.sgst; acc.csamt += l.cess;
+      byRate.set(l.gstRate, acc);
+    }
+    let n = 1;
+    return [...byRate.entries()].map(([rt, t]) => ({
+      num: n++, itm_det: { rt, txval: round2(t.txval), iamt: round2(t.iamt), camt: round2(t.camt), samt: round2(t.samt), csamt: round2(t.csamt) }
+    }));
+  };
+
+  for (const inv of sales) {
+    const ev = S.evals.get(inv.id); if (!ev) continue;
+    const party = validateGSTIN(inv.partyGSTIN);
+    const reg = party.ok;
+    docCount++;
+    const itms = itemsByRate(ev.lines);
+    const idtGov = fmtDate(inv.invoiceDate); // already DD-MM-YYYY
+
+    if (inv.docType === 'INVOICE') {
+      const invEntry = { inum: inv.invoiceNumber, idt: idtGov, val: round2(ev.totals.totalAmount), pos: ev.placeOfSupply, rchrg: inv.reverseCharge ? 'Y' : 'N', inv_typ: 'R', itms };
+      if (reg) {
+        if (!b2bMap.has(party.gstin)) b2bMap.set(party.gstin, []);
+        b2bMap.get(party.gstin).push(invEntry);
+      } else if (ev.interState && ev.totals.totalAmount > B2CL_LIMIT) {
+        b2cl.push({ ...invEntry, etin: '' });
+      } else {
+        for (const l of ev.lines) {
+          if (l.gstRate === 0) continue;
+          const k = `${ev.placeOfSupply}|${l.gstRate}`;
+          const row = b2csMap.get(k) || { sply_ty: ev.interState ? 'INTER' : 'INTRA', pos: ev.placeOfSupply, typ: 'OE', rt: l.gstRate, txval: 0, iamt: 0, camt: 0, samt: 0, csamt: 0 };
+          row.txval += l.taxableValue;
+          if (ev.interState) row.iamt += l.igst; else { row.camt += l.cgst; row.samt += l.sgst; }
+          row.csamt += l.cess;
+          b2csMap.set(k, row);
+        }
+      }
+    } else {
+      const noteEntry = { ntty: inv.docType === 'CREDIT_NOTE' ? 'C' : 'D', nt_num: inv.invoiceNumber, nt_dt: idtGov, val: round2(ev.totals.totalAmount), pos: ev.placeOfSupply, rchrg: inv.reverseCharge ? 'Y' : 'N', inv_typ: 'R', itms };
+      if (reg) {
+        if (!cdnrMap.has(party.gstin)) cdnrMap.set(party.gstin, []);
+        cdnrMap.get(party.gstin).push(noteEntry);
+      } else {
+        cdnur.push(noteEntry);
+      }
+    }
+
+    for (const l of ev.lines) {
+      const k = `${l.hsn || 'NA'}|${l.gstRate}`;
+      const h = hsnMap.get(k) || { num: hsnMap.size + 1, hsn_sc: l.hsn || '', desc: l.description || '', uqc: 'OTH-OTHERS', qty: 0, rt: l.gstRate, txval: 0, iamt: 0, camt: 0, samt: 0, csamt: 0 };
+      h.qty += l.qty; h.txval += l.taxableValue; h.iamt += l.igst; h.camt += l.cgst; h.samt += l.sgst; h.csamt += l.cess;
+      hsnMap.set(k, h);
+    }
+  }
+
+  const b2b = [...b2bMap.entries()].map(([ctin, inv]) => ({ ctin, inv }));
+  const cdnr = [...cdnrMap.entries()].map(([ctin, nt]) => ({ ctin, nt }));
+  const b2cs = [...b2csMap.values()].map(r => ({ ...r, txval: round2(r.txval), iamt: round2(r.iamt), camt: round2(r.camt), samt: round2(r.samt), csamt: round2(r.csamt) }));
+  const hsn = { data: [...hsnMap.values()].map(h => ({ ...h, qty: round2(h.qty), txval: round2(h.txval), iamt: round2(h.iamt), camt: round2(h.camt), samt: round2(h.samt), csamt: round2(h.csamt) })) };
+
+  const [y, m] = period.split('-');
+  const fp = `${m}${y}`; // MMYYYY, e.g. "082026" for 2026-08
+
+  return { gstin: S.biz.gstin, fp, version: 'GST3.2.3', hash: 'hash', b2b, b2cl, b2cs, cdnr, cdnur, hsn };
+}
+
+function gstr1(period) {
+  const sales = S.invoices.filter(i => i.type === 'SALE' && i.period === period);
+  const out = { b2b: [], b2cl: [], b2cs: {}, cdnr: [], cdnur: [], nil: 0, hsn: {}, docs: { count: 0, numbers: [] } };
+  for (const inv of sales) {
+    const ev = S.evals.get(inv.id); if (!ev) continue; const s = sgn(inv);
+    const reg = validateGSTIN(inv.partyGSTIN).ok;
+    const row = { invoiceNumber: inv.invoiceNumber, invoiceDate: inv.invoiceDate, partyName: inv.partyName, partyGSTIN: inv.partyGSTIN, pos: ev.placeOfSupply, reverseCharge: !!inv.reverseCharge, ...ev.totals };
+    out.docs.count++; out.docs.numbers.push(inv.invoiceNumber);
+    if (inv.docType === 'INVOICE') {
+      if (reg) out.b2b.push(row);
+      else if (ev.interState && ev.totals.totalAmount > B2CL_LIMIT) out.b2cl.push(row);
+      else for (const l of ev.lines) { if (l.gstRate === 0) continue; const k = `${ev.placeOfSupply}|${l.gstRate}`; out.b2cs[k] = acc(out.b2cs[k] || { ...zero(), pos: ev.placeOfSupply, rate: l.gstRate }, l); }
+    } else (reg ? out.cdnr : out.cdnur).push({ ...row, docType: inv.docType, originalInvoiceNumber: inv.originalInvoiceNumber || '' });
+    for (const l of ev.lines) {
+      if (l.gstRate === 0) out.nil = round2(out.nil + s * l.taxableValue);
+      const k = `${l.hsn || 'NA'}|${l.gstRate}`;
+      const h = out.hsn[k] || (out.hsn[k] = { hsn: l.hsn || '—', rate: l.gstRate, qty: 0, ...zero() });
+      h.qty = round2(h.qty + s * l.qty); acc(h, l, s);
+    }
+  }
+  return out;
+}
+
+function dueDates(period) {
+  const b = S.biz; const nm = nextMonth(period); const m = +period.slice(5, 7);
+  if (b.registrationType === 'COMPOSITION') {
+    const qEnd = [6, 9, 12, 3].includes(m);
+    return qEnd ? [{ form: 'CMP-08', date: `${nm}-18` }] : [];
+  }
+  if (b.filingFrequency === 'QUARTERLY') {
+    const qEnd = [6, 9, 12, 3].includes(m);
+    if (!qEnd) return [{ form: 'PMT-06 (tax payment)', date: `${nm}-25` }];
+    return [{ form: 'GSTR-1 (QRMP)', date: `${nm}-13` }, { form: 'GSTR-3B (QRMP)', date: `${nm}-${QRMP_22.includes(b.stateCode) ? 22 : 24}` }];
+  }
+  return [{ form: 'GSTR-1', date: `${nm}-11` }, { form: 'GSTR-3B', date: `${nm}-20` }];
+}
+
+/* =====================================================================
+   STATE
+   ===================================================================== */
+const S = {
+  authReady: false, user: null, profile: null, businesses: [], invites: [], biz: null, role: null, fy: null, period: null,
+  invoices: [], issues: [], periods: {}, gstr2b: [], payments: {}, audit: [], evals: new Map(), unsubs: [], loaded: {},
+  booting: false, bootError: '', formDirty: false, navOpen: false, draft: null, draftId: null, importPreview: null, twoBPreview: null,
+  f: { q: '', status: '', month: 'CUR', issueStatus: 'ACTIVE', issueSev: '', issueType: '', itc: '', reconTab: 'books', returnsTab: '3b' }
+};
+const isLocked = p => ['APPROVED', 'FILED'].includes(S.periods[p]?.status);
+const route = () => location.hash.replace(/^#\/?/, '').split('?')[0] || '';
+
+function recompute() {
+  if (!S.biz) return;
+  const ctx = engineCtx(); S.evals = new Map();
+  for (const inv of S.invoices) S.evals.set(inv.id, evaluateInvoice(inv, ctx));
+}
+let rq = 0;
+function scheduleRender() {
+  if (rq) return;
+  rq = requestAnimationFrame(() => { rq = 0; recompute(); if (!S.formDirty) render(); });
+}
+
+/* =====================================================================
+   DATA LAYER
+   ===================================================================== */
+const bizRef = (...p) => doc(db, 'businesses', S.biz.id, ...p);
+const bizCol = (...p) => collection(db, 'businesses', S.biz.id, ...p);
+function auditData(action, entityType, entityId, metadata = {}) {
+  return { userId: S.user.uid, userName: S.user.displayName || S.user.email, action, entityType, entityId: entityId || null, metadata: clean(metadata), timestamp: serverTimestamp() };
+}
+const auditIn = (batch, ...a) => batch.set(doc(bizCol('auditLogs')), auditData(...a));
+const audit = (...a) => addDoc(bizCol('auditLogs'), auditData(...a)).catch(e => console.warn('audit', e));
+
+class Batcher { // splits large writes into several committed batches
+  constructor() { this.b = writeBatch(db); this.n = 0; this.all = []; }
+  op(fn) { fn(this.b); this.n++; if (this.n >= 400) this.flush(); }
+  flush() { if (this.n) { this.all.push(this.b.commit()); this.b = writeBatch(db); this.n = 0; } }
+  async commit() { this.flush(); await Promise.all(this.all); }
+}
+
+function unsubAll() { S.unsubs.forEach(u => { try { u(); } catch { } }); S.unsubs = []; }
+
+async function ensureProfile() {
+  const ref = doc(db, 'users', S.user.uid); const snap = await getDoc(ref);
+  if (snap.exists()) {
+    S.profile = snap.data();
+    if (S.profile.email !== S.user.email) { S.profile.email = S.user.email; setDoc(ref, { email: S.user.email, updatedAt: serverTimestamp() }, { merge: true }).catch(() => { }); }
+  }
+  else {
+    S.profile = { uid: S.user.uid, name: S.user.displayName || '', email: S.user.email, activeBusinessId: null };
+    await setDoc(ref, { ...S.profile, createdAt: serverTimestamp(), updatedAt: serverTimestamp() });
+  }
+}
+async function loadBusinesses() {
+  const snap = await getDocs(query(collection(db, 'businesses'), where('memberIds', 'array-contains', S.user.uid)));
+  S.businesses = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => a.name.localeCompare(b.name));
+  S.invites = [];
+  if (S.user.email) {
+    const inv = await getDocs(query(collection(db, 'businesses'), where('inviteEmails', 'array-contains', S.user.email.toLowerCase())));
+    S.invites = inv.docs.map(d => ({ id: d.id, ...d.data() })).filter(b => !b.memberIds.includes(S.user.uid));
+  }
+}
+function defaultPeriod(fy) {
+  const months = fyMonths(fy); const cur = todayISO().slice(0, 7); const prev = prevMonth(cur);
+  return months.includes(prev) ? prev : months.includes(cur) ? cur : months[11];
+}
+async function selectBusiness(id) {
+  const b = S.businesses.find(x => x.id === id); if (!b) return;
+  unsubAll();
+  Object.assign(S, { biz: b, role: b.roles?.[S.user.uid] || 'VIEWER', invoices: [], issues: [], periods: {}, gstr2b: [], payments: {}, audit: [], evals: new Map() });
+  S.fy = S.fy || fyOf(todayISO()); S.period = defaultPeriod(S.fy);
+  subscribe();
+  // keep the member's stored name/email in step with the login (e.g. after an email change)
+  const me = b.memberInfo?.[S.user.uid] || {}; const email = (S.user.email || '').toLowerCase();
+  if (S.role === 'OWNER' && (me.email !== email || (S.user.displayName && me.name !== S.user.displayName)))
+    updateDoc(bizRef(), { memberInfo: { ...(b.memberInfo || {}), [S.user.uid]: { name: S.user.displayName || me.name || '', email } }, updatedAt: serverTimestamp() }).catch(() => { });
+  setDoc(doc(db, 'users', S.user.uid), { activeBusinessId: id, updatedAt: serverTimestamp() }, { merge: true }).catch(() => { });
+}
+function subscribe() {
+  S.loaded = {};
+  const on = (name, q, fn) => S.unsubs.push(onSnapshot(q, snap => { fn(snap); S.loaded[name] = true; scheduleRender(); },
+    err => {
+      console.error(name, err);
+      if (name === 'biz' && err.code === 'permission-denied') { toast('You no longer have access to this business.', 'err'); reboot(); return; }
+      toast(`Could not load ${name}: ${friendly(err)}`, 'err');
+    }));
+  on('biz', bizRef(), s => {
+    if (!s.exists()) return; const d = { id: s.id, ...s.data() }; S.biz = d; S.role = d.roles?.[S.user.uid] || 'VIEWER';
+    const i = S.businesses.findIndex(x => x.id === d.id); if (i >= 0) S.businesses[i] = d;
+  });
+  on('invoices', query(bizCol('invoices'), where('fy', '==', S.fy)), s => { S.invoices = s.docs.map(d => ({ id: d.id, ...d.data() })); });
+  on('issues', query(bizCol('issues'), where('fy', '==', S.fy)), s => { S.issues = s.docs.map(d => ({ id: d.id, ...d.data() })); });
+  on('periods', bizCol('periods'), s => { S.periods = {}; s.docs.forEach(d => { S.periods[d.id] = { id: d.id, ...d.data() }; }); });
+  on('gstr2b', query(bizCol('gstr2b'), where('fy', '==', S.fy)), s => { S.gstr2b = s.docs.map(d => ({ id: d.id, ...d.data() })); });
+  on('payments', query(bizCol('payments'), where('fy', '==', S.fy)), s => { S.payments = {}; s.docs.forEach(d => { S.payments[d.id] = d.data(); }); });
+  on('audit', query(bizCol('auditLogs'), orderBy('timestamp', 'desc'), limit(300)), s => { S.audit = s.docs.map(d => ({ id: d.id, ...d.data() })); });
+}
+async function reboot() {
+  unsubAll(); S.biz = null; S.booting = true; render();
+  try {
+    await loadBusinesses();
+    const pick = (S.profile?.activeBusinessId && S.businesses.find(b => b.id === S.profile.activeBusinessId)) || S.businesses[0];
+    if (pick) await selectBusiness(pick.id);
+  } catch (e) { console.error(e); S.bootError = friendly(e); }
+  S.booting = false; render();
+}
+
+/* ---------- issues sync ---------- */
+function syncIssues(bt, inv, newIssues) {
+  const now = serverTimestamp();
+  const existing = new Map(S.issues.filter(i => i.transactionId === inv.id && i.auto).map(i => [i.code, i]));
+  for (const is of newIssues) {
+    const id = `${inv.id}__${is.code}`; const ex = existing.get(is.code); existing.delete(is.code);
+    const ref = bizRef('issues', id);
+    if (!ex) bt.op(b => b.set(ref, {
+      auto: true, code: is.code, type: is.code, severity: is.severity, description: is.description, transactionId: inv.id,
+      invoiceNumber: inv.invoiceNumber || '', invoiceType: inv.type, partyName: inv.partyName || '', period: inv.period, fy: inv.fy,
+      status: 'OPEN', resolution: null, resolvedBy: null, resolvedAt: null, detectedAt: now, updatedAt: now
+    }));
+    else if (ex.status === 'RESOLVED') bt.op(b => b.update(ref, { status: 'OPEN', severity: is.severity, description: is.description, resolution: 'Re-opened: condition detected again', resolvedBy: null, resolvedAt: null, updatedAt: now }));
+    else if (ex.description !== is.description || ex.severity !== is.severity || ex.period !== inv.period || ex.invoiceNumber !== inv.invoiceNumber)
+      bt.op(b => b.update(ref, { severity: is.severity, description: is.description, period: inv.period, invoiceNumber: inv.invoiceNumber || '', updatedAt: now }));
+  }
+  for (const ex of existing.values()) if (['OPEN', 'UNDER_REVIEW'].includes(ex.status))
+    bt.op(b => b.update(bizRef('issues', ex.id), { status: 'RESOLVED', resolution: 'Auto-resolved — condition no longer present', resolvedBy: 'System', resolvedAt: now, updatedAt: now }));
+}
+
+/* ---------- invoices ---------- */
+const INPUT_FIELDS = ['type', 'docType', 'invoiceNumber', 'invoiceDate', 'partyName', 'partyGSTIN', 'placeOfSupply', 'supplierState', 'reverseCharge', 'itcCategory', 'declaredTotal', 'originalInvoiceNumber', 'notes'];
+function normalizeDraft(d) {
+  const inv = {};
+  for (const k of INPUT_FIELDS) inv[k] = d[k] ?? '';
+  inv.invoiceNumber = String(inv.invoiceNumber).trim(); inv.partyName = String(inv.partyName).trim();
+  inv.partyGSTIN = String(inv.partyGSTIN).trim().toUpperCase();
+  inv.reverseCharge = !!d.reverseCharge; inv.docType = inv.docType || 'INVOICE'; inv.itcCategory = inv.itcCategory || 'BUSINESS';
+  inv.lines = (d.lines || []).filter(l => String(l.description || '').trim() || num(l.taxableValue) || num(l.qty))
+    .map(l => clean({ description: String(l.description || '').trim(), hsn: String(l.hsn || '').trim(), qty: num(l.qty), unitPrice: num(l.unitPrice), taxableValue: round2(num(l.taxableValue)), gstRate: num(l.gstRate), cess: round2(num(l.cess)), declared: l.declared || null }));
+  inv.period = inv.invoiceDate.slice(0, 7); inv.fy = inv.invoiceDate ? fyOf(inv.invoiceDate) : '';
+  return inv;
+}
+function invoiceSnapshot(inv, ev) {
+  return {
+    ...inv, placeOfSupply: inv.placeOfSupply, resolvedPlaceOfSupply: ev.placeOfSupply, supplierStateResolved: ev.supplierState, interState: ev.interState,
+    ...ev.totals, status: ev.status, issueCodes: ev.issues.map(i => i.code), itcStatus: ev.itcStatus, itcReason: ev.itcReason,
+    reconStatus: ev.reconStatus, recon: ev.recon, engineVersion: ENGINE_VERSION, evalSig: evalSig(ev)
+  };
+}
+/** items: [{ draft, id?, payment? }] */
+async function saveInvoices(items, source, auditAction) {
+  const ctx = engineCtx(); const bt = new Batcher(); const uid = S.user.uid; const saved = [];
+  for (const it of items) {
+    const inv = normalizeDraft(it.draft);
+    const ref = it.id ? bizRef('invoices', it.id) : doc(bizCol('invoices'));
+    inv.id = ref.id;
+    if (inv.type === 'PURCHASE' && it.payment) {
+      ctx.payments[inv.id] = it.payment;
+      bt.op(b => b.set(bizRef('payments', inv.id), { ...clean(it.payment), fy: inv.fy, invoiceNumber: inv.invoiceNumber, updatedBy: uid, updatedAt: serverTimestamp() }));
+    }
+    const ev = evaluateInvoice(inv, ctx);
+    const data = clean(invoiceSnapshot(inv, ev)); delete data.id;
+    data.source = it.id ? (S.invoices.find(x => x.id === it.id)?.source || source) : source;
+    data.updatedAt = serverTimestamp(); data.updatedBy = uid;
+    if (!it.id) { data.createdAt = serverTimestamp(); data.createdBy = uid; }
+    bt.op(b => b.set(ref, data, { merge: true }));
+    syncIssues(bt, inv, ev.issues);
+    ctx.invoices = ctx.invoices.filter(x => x.id !== inv.id).concat([{ ...inv }]);
+    saved.push({ ...inv, ev });
+  }
+  if (auditAction) bt.op(b => auditIn(b, auditAction.action, 'invoice', auditAction.entityId || saved[0]?.id, auditAction.meta || {}));
+  await bt.commit();
+  return saved;
+}
+async function deleteInvoice(id) {
+  const inv = S.invoices.find(i => i.id === id); if (!inv) return;
+  const bt = new Batcher(); const now = serverTimestamp();
+  bt.op(b => b.delete(bizRef('invoices', id)));
+  for (const is of S.issues.filter(i => i.transactionId === id && ['OPEN', 'UNDER_REVIEW'].includes(i.status)))
+    bt.op(b => b.update(bizRef('issues', is.id), { status: 'RESOLVED', resolution: 'Invoice deleted', resolvedBy: 'System', resolvedAt: now, updatedAt: now }));
+  bt.op(b => auditIn(b, 'INVOICE_DELETED', 'invoice', id, { invoiceNumber: inv.invoiceNumber, type: inv.type, total: inv.totalAmount }));
+  await bt.commit();
+}
+/** Re-evaluate every invoice of the FY; updates open-period snapshots and syncs issues everywhere. */
+async function runChecks(ctxExtra = {}, silent = false) {
+  const ctx = engineCtx(ctxExtra); const bt = new Batcher(); let changed = 0;
+  for (const inv of S.invoices) {
+    const ev = evaluateInvoice(inv, ctx);
+    if (!isLocked(inv.period) && can('write') && evalSig(ev) !== inv.evalSig) {
+      const snap = clean(invoiceSnapshot(normalizeDraft(inv), ev)); delete snap.id;
+      bt.op(b => b.update(bizRef('invoices', inv.id), { ...snap, updatedAt: serverTimestamp() })); changed++;
+    }
+    syncIssues(bt, inv, ev.issues);
+  }
+  if (bt.n || bt.all.length) bt.op(b => auditIn(b, 'CHECKS_RUN', 'business', S.biz.id, { invoices: S.invoices.length, updated: changed, engineVersion: ENGINE_VERSION }));
+  await bt.commit();
+  if (!silent) toast(`Checks complete — ${S.invoices.length} invoices evaluated.`);
+}
+
+/* =====================================================================
+   RENDERING
+   ===================================================================== */
+const app = $('#app');
+function render() {
+  const r = route();
+  if (!S.authReady) { app.innerHTML = `<div class="splash"><div class="spin"></div>Loading TaxPilot AI…</div>`; return; }
+  if (!S.user) {
+    if (['login', 'signup', 'reset'].includes(r)) app.innerHTML = viewAuth(r);
+    else app.innerHTML = viewLanding();
+    if (location.protocol === 'file:') app.insertAdjacentHTML('afterbegin', `<div class="notice bad" style="margin:12px">This page was opened directly as a file, so the database will not work. Open it through a web server instead, e.g. <b>http://localhost:5510/taxpilot-ai.html</b>.</div>`);
+    return;
+  }
+  if (S.booting) { app.innerHTML = `<div class="splash"><div class="spin"></div>Loading your workspace…</div>`; return; }
+  if (!S.biz || r === 'onboarding') { app.innerHTML = viewOnboarding(); return; }
+  const views = { dashboard: viewDashboard, sales: () => viewInvoices('SALE'), purchases: () => viewInvoices('PURCHASE'), issues: viewIssues,
+    reconciliation: viewRecon, itc: viewITC, returns: viewReturns, audit: viewAudit, business: viewBusiness, assistant: viewAssistant, setup: viewSetup };
+  const v = views[r] || viewDashboard;
+  const y = window.scrollY;
+  app.innerHTML = viewShell(r in views ? r : 'dashboard', v());
+  window.scrollTo(0, y);
+}
+
+/* ---------- landing ---------- */
+function viewLanding() {
+  return `
+  <div class="land-nav"><div class="logo"><i>T</i>TaxPilot AI</div><div class="spacer"></div>
+    <a class="btn ghost" href="#/login">Sign in</a>&nbsp;<a class="btn primary" href="#/signup">Get started</a></div>
+  <div class="hero">
+    <div>
+      <span class="badge b-brand">GST compliance · India</span>
+      <h1>Your <span>AI-powered GST</span> Compliance Assistant</h1>
+      <p class="lead">Record sales and purchases, validate every invoice against GST rules, reconcile with GSTR-2B, track Input Tax Credit and prepare GSTR-1 & GSTR-3B — with a full audit trail and your approval before anything is filed.</p>
+      <div class="row" style="margin-top:22px"><a class="btn primary lg" href="#/signup">Get started — it's free</a><a class="btn lg" href="#/login">Sign in</a></div>
+    </div>
+    <div class="hero-card">
+      <div class="row"><b>GST Return Review</b><span class="spacer"></span><span class="badge b-ok">Ready</span></div>
+      <div class="kv"><span class="muted">Sales</span><b>₹12,50,000</b></div>
+      <div class="kv"><span class="muted">Output GST</span><b>₹2,25,000</b></div>
+      <div class="kv"><span class="muted">Eligible ITC</span><b>₹1,18,000</b></div>
+      <div class="kv"><span class="muted">Net cash liability</span><b>₹1,07,000</b></div>
+      <div class="notice ok" style="margin:14px 0 0">✓ All required checks completed</div>
+    </div>
+  </div>
+  <div class="section">
+    <h2>Everything your GST workflow needs</h2>
+    <div class="features">
+      ${[['Invoice management', 'Add invoices manually or import from Excel/CSV. Multi-line items, credit and debit notes.'],
+      ['GST rules engine', 'Deterministic tax split (CGST/SGST/IGST), rate checks with effective dates, GSTIN checksum, duplicates.'],
+      ['GSTR-2B reconciliation', 'Import GSTR-2B JSON and match every purchase: matched, mismatch, missing in 2B or missing in books.'],
+      ['ITC analysis', 'Eligibility per invoice, blocked credits (17(5)), Rule 37 180-day payment tracking, Section 16(4) time limits.'],
+      ['Return preparation', 'GSTR-1 summary and GSTR-3B with ITC set-off and cash liability. Review, approve and lock the period.'],
+      ['Issues & audit trail', 'Every problem becomes a tracked issue. Every important action is logged with who and when.']]
+      .map(([t, d]) => `<div class="feature"><b>${t}</b><span class="muted">${d}</span></div>`).join('')}
+    </div>
+  </div>
+  <div class="section">
+    <h2>How it works</h2>
+    <div class="flow">${['Business setup', 'Record invoices', 'Rules validation', 'Issue detection', 'GSTR-2B reconciliation', 'ITC analysis', 'Return preparation', 'Your review & approval', 'Filing'].map(s => `<span>${s}</span>`).join('<em>→</em>')}</div>
+    <div class="principle">
+      <div><b>AI</b><div class="muted">Extracts, classifies and explains.</div></div>
+      <div><b>GST Rules Engine</b><div class="muted">Calculates and validates — deterministic, never guessed.</div></div>
+      <div><b>You</b><div class="muted">Review and approve before anything is filed.</div></div>
+    </div>
+  </div>
+  <footer class="land">TaxPilot AI · Your AI-powered GST Compliance Assistant</footer>`;
+}
+
+/* ---------- auth ---------- */
+function viewAuth(mode) {
+  const t = { login: ['Welcome back', 'Sign in to your TaxPilot AI account'], signup: ['Create your account', 'Start managing GST compliance in minutes'], reset: ['Reset password', "We'll email you a reset link"] }[mode];
+  return `<div class="auth-wrap"><div class="auth-card">
+    <a href="#/" class="logo" style="justify-content:center;margin-bottom:18px"><i>T</i>TaxPilot AI</a>
+    <div class="card">
+      <h2 style="font-size:22px">${t[0]}</h2><p class="muted" style="margin-top:-4px">${t[1]}</p>
+      <div id="auth-msg"></div>
+      <form data-form="${mode}">
+        ${mode === 'signup' ? `<div class="field"><label class="f">Full name</label><input name="name" required autocomplete="name"></div>` : ''}
+        <div class="field"><label class="f">Email</label><input name="email" type="email" required autocomplete="email"></div>
+        ${mode !== 'reset' ? `<div class="field"><label class="f">Password</label><input name="password" type="password" required minlength="6" autocomplete="${mode === 'signup' ? 'new-password' : 'current-password'}"></div>` : ''}
+        ${mode === 'signup' ? `<div class="field"><label class="f">Confirm password</label><input name="password2" type="password" required minlength="6" autocomplete="new-password"></div>` : ''}
+        <button class="btn primary" style="width:100%;justify-content:center;padding:11px">${{ login: 'Sign in', signup: 'Create account', reset: 'Send reset link' }[mode]}</button>
+      </form>
+      <div class="small muted" style="margin-top:16px;text-align:center">
+        ${mode === 'login' ? `<a href="#/reset">Forgot password?</a> · New here? <a href="#/signup">Create an account</a>` : `Already have an account? <a href="#/login">Sign in</a>`}
+      </div>
+    </div></div></div>`;
+}
+function authMsg(text, type = 'bad') { const m = $('#auth-msg'); if (m) m.innerHTML = `<div class="notice ${type}">${esc(text)}</div>`; }
+
+/* ---------- onboarding / business form ---------- */
+const BUSINESS_TYPES = ['Proprietorship', 'Partnership', 'LLP', 'Private Limited', 'Public Limited', 'HUF', 'Trust / Society', 'Government', 'Other'];
+const CATEGORIES = ['Trading', 'Manufacturing', 'Services', 'E-commerce', 'Works contract', 'Other'];
+const REG_TYPES = [['REGULAR', 'Regular'], ['COMPOSITION', 'Composition'], ['SEZ', 'SEZ unit / developer'], ['CASUAL', 'Casual taxable person'], ['OTHER', 'Other']];
+function fyOptions(sel) {
+  const cur = +fyOf(todayISO()).slice(0, 4); let o = '';
+  for (let y = cur + 1; y >= 2017; y--) { const f = `${y}-${pad((y + 1) % 100)}`; o += `<option value="${f}" ${f === sel ? 'selected' : ''}>FY ${f}</option>`; }
+  return o;
+}
+function bizFields(b = {}) {
+  const sel = (arr, v) => arr.map(x => { const [val, lab] = Array.isArray(x) ? x : [x, x]; return `<option value="${esc(val)}" ${val === v ? 'selected' : ''}>${esc(lab)}</option>`; }).join('');
+  return `
+  <div class="grid g2">
+    <div class="field"><label class="f">Business name *</label><input name="name" required value="${esc(b.name)}"></div>
+    <div class="field"><label class="f">Legal business name</label><input name="legalName" value="${esc(b.legalName)}"></div>
+    <div class="field"><label class="f">GSTIN *</label><input name="gstin" required maxlength="15" style="text-transform:uppercase" value="${esc(b.gstin)}" data-gstin-auto><div class="hint" id="gstin-hint">15 characters — state and PAN are filled automatically</div></div>
+    <div class="field"><label class="f">PAN *</label><input name="pan" required maxlength="10" style="text-transform:uppercase" value="${esc(b.pan)}"></div>
+    <div class="field"><label class="f">State *</label><select name="stateCode" required>${stateOptions(b.stateCode, 'Select state')}</select></div>
+    <div class="field"><label class="f">City</label><input name="city" value="${esc(b.city)}"></div>
+  </div>
+  <div class="field"><label class="f">Address</label><textarea name="address" rows="2">${esc(b.address)}</textarea></div>
+  <div class="grid g3">
+    <div class="field"><label class="f">Business type</label><select name="businessType">${sel(BUSINESS_TYPES, b.businessType || 'Proprietorship')}</select></div>
+    <div class="field"><label class="f">Business category</label><select name="category">${sel(CATEGORIES, b.category || 'Trading')}</select></div>
+    <div class="field"><label class="f">GST registration type *</label><select name="registrationType">${sel(REG_TYPES, b.registrationType || 'REGULAR')}</select></div>
+    <div class="field"><label class="f">Return filing frequency</label><select name="filingFrequency">${sel([['MONTHLY', 'Monthly'], ['QUARTERLY', 'Quarterly (QRMP)']], b.filingFrequency || 'MONTHLY')}</select></div>
+    <div class="field"><label class="f">Current financial year</label><select name="financialYear">${fyOptions(b.financialYear || fyOf(todayISO()))}</select></div>
+    <div class="field"><label class="f">Contact phone</label><input name="contactPhone" value="${esc(b.contactPhone)}"></div>
+  </div>
+  <div class="field"><label class="f">Contact email</label><input name="contactEmail" type="email" value="${esc(b.contactEmail || S.user?.email || '')}"></div>`;
+}
+function readBizForm(f) {
+  const d = Object.fromEntries(new FormData(f).entries());
+  for (const k in d) d[k] = String(d[k]).trim();
+  d.gstin = d.gstin.toUpperCase(); d.pan = d.pan.toUpperCase();
+  const g = validateGSTIN(d.gstin);
+  if (!g.ok) throw new Error(`GSTIN ${g.error}.`);
+  if (!validPAN(d.pan)) throw new Error('PAN format is invalid (e.g. ABCDE1234F).');
+  if (g.pan !== d.pan) throw new Error('PAN does not match characters 3–12 of the GSTIN.');
+  if (g.stateCode !== d.stateCode) throw new Error(`State does not match the GSTIN state code (${stateName(g.stateCode)}).`);
+  d.state = STATE_CODES[d.stateCode];
+  return d;
+}
+function viewOnboarding() {
+  const adding = !!S.biz;
+  return `<div class="auth-wrap" style="place-items:start center"><div style="width:100%;max-width:820px">
+    <div class="row" style="margin-bottom:18px"><div class="logo"><i>T</i>TaxPilot AI</div><span class="spacer"></span>
+      ${adding ? `<a class="btn" href="#/dashboard">Cancel</a>` : ''}<button class="btn ghost" data-act="logout">Sign out</button></div>
+    ${S.bootError ? `<div class="notice bad">${esc(S.bootError)}</div><div class="card" style="margin-bottom:16px"><h3>Finish the Firebase setup</h3>${setupSteps()}${rulesBox()}<button class="btn primary" data-act="retry-boot">I've done this — retry</button></div>` : ''}
+    ${viewInvitesBox()}
+    <div class="card">
+      <h2 style="font-size:22px">${adding ? 'Add another business' : 'Complete your business setup'}</h2>
+      <p class="muted">Each business gets its own isolated GST workspace. You can edit these details later.</p>
+      <form data-form="create-business">${bizFields({})}
+        <div class="row"><span class="spacer"></span><button class="btn primary lg">Create business</button></div>
+      </form>
+    </div></div></div>`;
+}
+function viewInvitesBox() {
+  if (!S.invites.length) return '';
+  return `<div class="card" style="margin-bottom:16px"><h3>Invitations</h3>
+    ${!S.user.emailVerified ? `<div class="notice warn">Verify your email to accept invitations. <button class="btn sm" data-act="resend-verify">Resend email</button> <button class="btn sm" data-act="check-verify">I've verified</button></div>` : ''}
+    ${S.invites.map(b => `<div class="list-row"><div><b>${esc(b.name)}</b> <span class="small muted">${esc(b.gstin)}</span><div class="small muted">Role: ${ROLE_LABEL[b.invites?.[S.user.email.toLowerCase()]] || ''}</div></div><span class="spacer"></span>
+      <button class="btn sm primary" data-act="accept-invite" data-id="${b.id}" ${S.user.emailVerified ? '' : 'disabled'}>Accept</button>
+      <button class="btn sm" data-act="decline-invite" data-id="${b.id}">Decline</button></div>`).join('')}</div>`;
+}
+
+/* ---------- shell ---------- */
+function viewShell(r, body) {
+  const openIssues = S.issues.filter(i => ['OPEN', 'UNDER_REVIEW'].includes(i.status)).length;
+  const nav = (id, label, cnt) => `<a href="#/${id}" class="${r === id ? 'on' : ''}">${label}${cnt ? `<span class="cnt">${cnt}</span>` : ''}</a>`;
+  const u = S.user; const loading = !['invoices', 'issues', 'periods', 'gstr2b', 'payments'].every(k => S.loaded[k]);
+  return `<div class="shell">
+    <aside class="side ${S.navOpen ? 'open' : ''}">
+      <div class="logo"><i>T</i>TaxPilot AI</div>
+      <nav>
+        ${nav('dashboard', 'Dashboard')}
+        <div class="sec">Transactions</div>${nav('sales', 'Sales')}${nav('purchases', 'Purchases')}
+        <div class="sec">Compliance</div>${nav('issues', 'Issues', openIssues)}${nav('reconciliation', 'Reconciliation')}${nav('itc', 'ITC Analysis')}${nav('returns', 'GST Returns')}
+        <div class="sec">Assistant</div>${nav('assistant', 'AI Assistant')}
+        <div class="sec">Workspace</div>${nav('audit', 'Audit Trail')}${nav('business', 'Business & Team')}${nav('setup', 'Setup')}
+      </nav>
+      <div class="foot">Rules engine v${ENGINE_VERSION}</div>
+    </aside>
+    <div>
+      <header class="top">
+        <button class="btn sm burger" data-act="nav">☰</button>
+        <select data-change="biz" title="Business">${S.businesses.map(b => `<option value="${b.id}" ${b.id === S.biz.id ? 'selected' : ''}>${esc(b.name)}</option>`).join('')}<option value="__new">+ Add business</option></select>
+        <select data-change="fy" title="Financial year">${fyOptions(S.fy)}</select>
+        <select data-change="period" title="Return period">${fyMonths(S.fy).map(p => `<option value="${p}" ${p === S.period ? 'selected' : ''}>${periodLabel(p)}${isLocked(p) ? ' 🔒' : ''}</option>`).join('')}</select>
+        ${loading ? '<div class="spin" style="width:16px;height:16px;border-width:2px"></div>' : ''}
+        <span class="spacer"></span>
+        <div class="who"><span class="badge b-brand">${ROLE_LABEL[S.role] || S.role}</span><div class="avatar">${esc(initials(u.displayName || u.email))}</div>
+          <div class="small" style="line-height:1.2"><b>${esc(u.displayName || '')}</b><br><span class="muted">${esc(u.email)}</span></div>
+          <button class="btn sm ghost" data-act="logout">Sign out</button></div>
+      </header>
+      ${!u.emailVerified ? `<div class="notice warn" style="margin:12px 22px 0">Please verify your email address (${esc(u.email)}). <button class="btn sm" data-act="resend-verify">Resend email</button> <button class="btn sm" data-act="check-verify">I've verified</button></div>` : ''}
+      ${S.invites.length ? `<div class="notice info" style="margin:12px 22px 0">You have ${S.invites.length} pending invitation(s). <a href="#/business">View</a></div>` : ''}
+      <main id="main">${body}</main>
+    </div></div>`;
+}
+const pageHead = (title, sub, actions = '') => `<div class="page-head"><div><h2>${title}</h2>${sub ? `<div class="sub">${sub}</div>` : ''}</div><span class="spacer"></span><div class="row no-print">${actions}</div></div>`;
+const lockNote = p => isLocked(p) ? `<div class="notice info">🔒 ${periodLabel(p)} is ${S.periods[p].status === 'FILED' ? 'filed' : 'approved'} and locked. Invoices in this period cannot be changed${can('team') && S.periods[p].status === 'APPROVED' ? ' — the owner can unlock it from GST Returns' : ''}.</div>` : '';
+
+/* ---------- dashboard ---------- */
+function viewDashboard() {
+  const p = S.period; const g = gstr3b(p);
+  const inP = S.invoices.filter(i => i.period === p);
+  const salesTot = inP.filter(i => i.type === 'SALE').reduce((a, i) => a + sgn(i) * (S.evals.get(i.id)?.totals.taxableValue || 0), 0);
+  const purTot = inP.filter(i => i.type === 'PURCHASE').reduce((a, i) => a + sgn(i) * (S.evals.get(i.id)?.totals.taxableValue || 0), 0);
+  const purchases = inP.filter(i => i.type === 'PURCHASE' && !i.reverseCharge);
+  const matched = purchases.filter(i => S.evals.get(i.id)?.reconStatus === 'MATCHED').length;
+  const open = S.issues.filter(i => ['OPEN', 'UNDER_REVIEW'].includes(i.status));
+  const openP = open.filter(i => i.period === p);
+  const pendingItc = round2(g.itcPending.igst + g.itcPending.cgst + g.itcPending.sgst + g.itcPending.cess);
+  const kpi = (l, v, s = '') => `<div class="kpi"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${s}</div></div>`;
+  // FY trend
+  const months = fyMonths(S.fy);
+  const trend = months.map(m => { const x = gstr3b(m); return { m, out: x.outputTax, itc: x.itcSum, cash: x.cash.total }; });
+  const max = Math.max(1, ...trend.map(t => Math.max(t.out, t.itc)));
+  const upcoming = [];
+  for (const m of [prevMonth(todayISO().slice(0, 7)), todayISO().slice(0, 7)]) for (const d of dueDates(m)) if (d.date >= todayISO()) upcoming.push({ ...d, period: m });
+  const b = S.biz;
+  return pageHead(`${esc(b.name)}`, `GSTIN ${esc(b.gstin)} · ${esc(stateName(b.stateCode))} · ${REG_TYPES.find(r => r[0] === b.registrationType)?.[1] || ''} · Period ${periodLabel(p)}`,
+    can('write') ? `<button class="btn" data-act="new-invoice" data-type="PURCHASE">+ Purchase</button><button class="btn primary" data-act="new-invoice" data-type="SALE">+ Sale</button>` : '')
+    + lockNote(p)
+    + (b.registrationType === 'COMPOSITION' ? `<div class="notice info">Composition taxpayer: output tax is paid on turnover through CMP-08 and ITC is not available. Values below are informational.</div>` : '')
+    + `<div class="kpis">
+      ${kpi('Sales (taxable)', inr0(salesTot), `${inP.filter(i => i.type === 'SALE').length} documents`)}
+      ${kpi('Purchases (taxable)', inr0(purTot), `${inP.filter(i => i.type === 'PURCHASE').length} documents`)}
+      ${kpi('Output GST', inr0(g.outputTax), `IGST ${inr0(g.o31a.igst)} · CGST ${inr0(g.o31a.cgst)} · SGST ${inr0(g.o31a.sgst)}`)}
+      ${kpi('Eligible ITC', inr0(g.itcSum), pendingItc ? `${inr0(pendingItc)} awaiting 2B match / review` : g.itcSum ? 'Matched with GSTR-2B' : 'No claimable ITC this period')}
+      ${kpi('Estimated cash liability', inr0(g.cash.total), g.rcmCash && (g.rcmCash.igst + g.rcmCash.cgst + g.rcmCash.sgst) ? 'includes reverse charge' : 'after ITC set-off')}
+      ${kpi('Invoices', inP.length, `${S.invoices.length} in FY ${S.fy}`)}
+      ${kpi('Reconciled purchases', `${matched}/${purchases.length}`, S.gstr2b.some(r => r.period === p) ? 'against GSTR-2B' : 'GSTR-2B not imported')}
+      ${kpi('Open issues', open.length, `${openP.length} in ${periodLabel(p)} · ${open.filter(i => i.severity === 'HIGH').length} high`)}
+    </div>
+    <div class="cols">
+      <div class="card"><h3>Output GST vs ITC — FY ${S.fy}</h3>
+        <div style="display:flex;align-items:flex-end;gap:6px;height:170px;margin-top:10px">
+          ${trend.map(t => `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px" title="${periodLabel(t.m)}: Output ${inr0(t.out)}, ITC ${inr0(t.itc)}, Cash ${inr0(t.cash)}">
+            <div style="display:flex;gap:2px;align-items:flex-end;height:140px;width:100%;justify-content:center">
+              <div style="width:40%;background:var(--brand);border-radius:3px 3px 0 0;height:${(t.out / max) * 100}%"></div>
+              <div style="width:40%;background:#10b981;border-radius:3px 3px 0 0;height:${(t.itc / max) * 100}%"></div></div>
+            <div class="small faint" style="${t.m === p ? 'color:var(--brand);font-weight:700' : ''}">${periodLabel(t.m).split(' ')[0]}</div></div>`).join('')}
+        </div>
+        <div class="row small muted" style="margin-top:8px"><span><span class="badge" style="background:var(--brand);width:10px;height:10px;padding:0"></span> Output GST</span><span><span class="badge" style="background:#10b981;width:10px;height:10px;padding:0"></span> Eligible ITC</span></div>
+      </div>
+      <div class="card"><h3>Upcoming due dates</h3>
+        ${upcoming.length ? upcoming.map(d => `<div class="list-row"><div><b>${d.form}</b><div class="small muted">for ${periodLabel(d.period)}</div></div><span class="spacer"></span><div class="num"><b>${fmtDate(d.date)}</b><div class="small ${daysBetween(todayISO(), d.date) <= 5 ? '' : 'muted'}" style="${daysBetween(todayISO(), d.date) <= 5 ? 'color:var(--bad)' : ''}">in ${daysBetween(todayISO(), d.date)} days</div></div></div>`).join('') : '<div class="muted">No upcoming due dates.</div>'}
+        <div class="small faint" style="margin-top:8px">Standard due dates; check the GST portal for extensions.</div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:16px"><div class="row"><h3 style="margin:0">Top open issues</h3><span class="spacer"></span><a href="#/issues" class="btn sm">View all</a></div>
+      ${open.length ? `<div style="margin-top:8px">${open.sort((a, b) => sevRank(a) - sevRank(b)).slice(0, 6).map(issueRowCompact).join('')}</div>` : `<div class="empty">No open issues 🎉</div>`}
+    </div>`;
+}
+const sevRank = i => ({ HIGH: 0, MEDIUM: 1, LOW: 2 }[i.severity] ?? 3);
+const issueRowCompact = i => `<div class="list-row"><span class="badge ${SEV_BADGE[i.severity]}">${i.severity}</span><div><b>${esc(i.type.replace(/_/g, ' '))}</b> · <a href="#" data-act="open-invoice" data-id="${i.transactionId}">${esc(i.invoiceNumber)}</a> <span class="small muted">${esc(i.partyName || '')}</span><div class="small muted">${esc(i.description)}</div></div></div>`;
+
+/* ---------- invoices list ---------- */
+function filteredInvoices(type) {
+  const f = S.f; const q = f.q.toLowerCase();
+  return S.invoices.filter(i => i.type === type)
+    .filter(i => f.month === 'ALL' || i.period === (f.month === 'CUR' ? S.period : f.month))
+    .filter(i => !f.status || (S.evals.get(i.id)?.status === f.status) || S.evals.get(i.id)?.itcStatus === f.status || S.evals.get(i.id)?.reconStatus === f.status)
+    .filter(i => !q || [i.invoiceNumber, i.partyName, i.partyGSTIN].some(x => String(x || '').toLowerCase().includes(q)))
+    .sort((a, b) => (b.invoiceDate || '').localeCompare(a.invoiceDate || '') || String(b.invoiceNumber).localeCompare(String(a.invoiceNumber)));
+}
+function invoiceRows(type) {
+  const list = filteredInvoices(type); const isP = type === 'PURCHASE';
+  if (!list.length) return `<tr><td colspan="${isP ? 11 : 9}"><div class="empty">No ${isP ? 'purchase' : 'sales'} documents for this filter.</div></td></tr>`;
+  const tot = zero(); let total = 0;
+  const rows = list.map(i => {
+    const ev = S.evals.get(i.id); if (!ev) return ''; const s = sgn(i); acc(tot, ev.totals, s); total += s * ev.totals.totalAmount;
+    const [bc, bl] = STATUS_BADGE[ev.status];
+    return `<tr class="click" data-act="open-invoice" data-id="${i.id}">
+      <td>${fmtDate(i.invoiceDate)}</td>
+      <td><b>${esc(i.invoiceNumber)}</b>${i.docType !== 'INVOICE' ? ` <span class="badge b-info">${i.docType === 'CREDIT_NOTE' ? 'CN' : 'DN'}</span>` : ''}${i.reverseCharge ? ' <span class="badge">RCM</span>' : ''}${isLocked(i.period) ? ' 🔒' : ''}</td>
+      <td>${esc(i.partyName)}<div class="small faint">${esc(i.partyGSTIN || 'Unregistered')}</div></td>
+      <td class="small">${esc(ev.placeOfSupply)}${ev.interState ? ' <span class="badge">Inter</span>' : ''}</td>
+      <td class="num">${inr(s * ev.totals.taxableValue)}</td>
+      <td class="num">${inr(s * (ev.totals.totalTax))}</td>
+      <td class="num"><b>${inr(s * ev.totals.totalAmount)}</b></td>
+      <td><span class="badge ${bc}">${bl}</span></td>
+      ${isP ? `<td><span class="badge ${ITC_BADGE[ev.itcStatus]}" title="${esc(ev.itcReason)}">${ITC_LABEL[ev.itcStatus]}</span></td><td><span class="badge ${RECON_BADGE[ev.reconStatus]}">${RECON_LABEL[ev.reconStatus]}</span></td>` : ''}
+      <td class="no-print" style="white-space:nowrap">${can('write') && !isLocked(i.period) ? `<button class="btn sm ghost danger" data-act="delete-invoice" data-id="${i.id}" title="Delete">✕</button>` : ''}</td></tr>`;
+  }).join('');
+  return rows + `<tr><td colspan="4"><b>Total (${list.length})</b></td><td class="num"><b>${inr(tot.taxableValue)}</b></td><td class="num"><b>${inr(tot.igst + tot.cgst + tot.sgst + tot.cess)}</b></td><td class="num"><b>${inr(total)}</b></td><td colspan="${isP ? 4 : 2}"></td></tr>`;
+}
+function viewInvoices(type) {
+  const isP = type === 'PURCHASE'; const f = S.f;
+  const monthOpts = `<option value="CUR" ${f.month === 'CUR' ? 'selected' : ''}>Selected period (${periodLabel(S.period)})</option><option value="ALL" ${f.month === 'ALL' ? 'selected' : ''}>All of FY ${S.fy}</option>` + fyMonths(S.fy).map(p => `<option value="${p}" ${f.month === p ? 'selected' : ''}>${periodLabel(p)}</option>`).join('');
+  const statusOpts = [['', 'All statuses'], ['VALID', 'Valid'], ['REVIEW', 'Needs review'], ['HAS_ISSUES', 'Has issues'],
+    ...(isP ? [['ELIGIBLE', 'ITC: Eligible'], ['POTENTIALLY_ELIGIBLE', 'ITC: Potentially eligible'], ['NEEDS_REVIEW', 'ITC: Needs review'], ['MISMATCH', 'ITC: Mismatch'], ['BLOCKED', 'ITC: Blocked'], ['NOT_ELIGIBLE', 'ITC: Not eligible'], ['MATCHED', '2B: Matched'], ['MISSING_IN_2B', '2B: Missing']] : [])]
+    .map(([v, l]) => `<option value="${v}" ${f.status === v ? 'selected' : ''}>${l}</option>`).join('');
+  return pageHead(isP ? 'Purchases' : 'Sales', isP ? 'Purchase invoices, credit/debit notes received, ITC and GSTR-2B status' : 'Sales invoices, credit and debit notes issued',
+    `<button class="btn" data-act="export-invoices" data-type="${type}">Export CSV</button>` +
+    (can('write') ? `<button class="btn" data-act="import-invoices" data-type="${type}">Import Excel / CSV</button><button class="btn" data-act="ai-upload" data-type="${type}">✨ Upload invoice (AI)</button><button class="btn primary" data-act="new-invoice" data-type="${type}">+ Add ${isP ? 'purchase' : 'sale'}</button>` : ''))
+    + (f.month === 'CUR' ? lockNote(S.period) : '')
+    + `<div class="toolbar no-print">
+      <input type="search" placeholder="Search number, party, GSTIN…" value="${esc(f.q)}" data-filter="q">
+      <select data-filter="month">${monthOpts}</select><select data-filter="status">${statusOpts}</select></div>
+    <div class="table-wrap"><table class="t"><thead><tr><th>Date</th><th>Number</th><th>${isP ? 'Supplier' : 'Customer'}</th><th>POS</th><th class="num">Taxable</th><th class="num">GST</th><th class="num">Total</th><th>Checks</th>${isP ? '<th>ITC</th><th>GSTR-2B</th>' : ''}<th></th></tr></thead>
+    <tbody id="inv-tbody" data-type="${type}">${invoiceRows(type)}</tbody></table></div>`;
+}
+
+/* ---------- invoice modal ---------- */
+const blankLine = () => ({ description: '', hsn: '', qty: '', unitPrice: '', taxableValue: '', gstRate: 18, cess: '' });
+function openInvoice(type, id, prefill = {}) {
+  if (id) {
+    const inv = S.invoices.find(i => i.id === id); if (!inv) return toast('Invoice not found (it may be in another financial year).', 'err');
+    const d = {}; for (const k of INPUT_FIELDS) d[k] = inv[k] ?? '';
+    d.lines = (inv.lines || []).map(l => ({ ...l, _manual: true }));
+    const pay = S.payments[id] || {}; d.paymentStatus = pay.status || 'UNPAID'; d.paidDate = pay.paidDate || '';
+    S.draft = d; S.draftId = id;
+  } else {
+    const t = todayISO(); const date = t.slice(0, 7) === S.period ? t : `${S.period}-01`;
+    S.draft = { type, docType: 'INVOICE', invoiceNumber: '', invoiceDate: date, partyName: '', partyGSTIN: '', placeOfSupply: '', supplierState: '', reverseCharge: false,
+      itcCategory: 'BUSINESS', declaredTotal: '', originalInvoiceNumber: '', notes: '', paymentStatus: 'UNPAID', paidDate: '', lines: [blankLine()], ...prefill };
+    S.draftId = null;
+  }
+  renderInvoiceModal();
+}
+// read-only if the role cannot write or the saved document sits in a locked period (a new date in a locked period is rejected on save)
+function draftReadOnly() { return !can('write') || (!!S.draftId && isLocked(S.invoices.find(i => i.id === S.draftId)?.period)); }
+function renderInvoiceModal() {
+  const d = S.draft; const isP = d.type === 'PURCHASE'; const ro = draftReadOnly(); const dis = ro ? 'disabled' : '';
+  const slab = rateSlab(d.invoiceDate || todayISO());
+  const rateOpts = v => { const rs = slab.rates.includes(num(v)) || v === '' ? slab.rates : [...slab.rates, num(v)]; return rs.map(r => `<option value="${r}" ${num(v) === r ? 'selected' : ''}>${r}%</option>`).join(''); };
+  const g = validateGSTIN(d.partyGSTIN);
+  $('#modal-root').innerHTML = `<div class="modal-back"><div class="modal wide">
+    <div class="modal-head"><h3>${S.draftId ? (ro ? 'View' : 'Edit') : 'New'} ${isP ? 'purchase' : 'sales'} ${DOC_LABEL[d.docType].toLowerCase()}</h3><button class="x" data-act="close-modal">×</button></div>
+    <div class="modal-body">
+      ${S.draftAI ? `<div class="notice warn">✨ Filled by AI from <b>${esc(S.draftAI.fileName)}</b> — check every field against the invoice before saving.${S.draftAI.switched ? ` Your GSTIN appears as the ${S.draftAI.switched === 'SALE' ? 'supplier' : 'buyer'}, so this was recorded as a <b>${S.draftAI.switched === 'SALE' ? 'sale' : 'purchase'}</b>.` : ''}${S.draftAI.notes ? `<br><span class="small">AI note: ${esc(S.draftAI.notes)}</span>` : ''}</div>` : ''}
+      ${ro ? `<div class="notice info">${can('write') ? 'This period is locked — the document is read-only.' : 'Your role has read-only access.'}</div>` : ''}
+      <div id="inv-err"></div>
+      <div class="grid g4">
+        <div class="field"><label class="f">Document type</label><select data-d="docType" ${dis}>${Object.entries(DOC_LABEL).map(([k, v]) => `<option value="${k}" ${d.docType === k ? 'selected' : ''}>${v}</option>`).join('')}</select></div>
+        <div class="field"><label class="f">${DOC_LABEL[d.docType]} number *</label><input data-d="invoiceNumber" value="${esc(d.invoiceNumber)}" maxlength="30" ${dis}></div>
+        <div class="field"><label class="f">Date *</label><input type="date" data-d="invoiceDate" value="${esc(d.invoiceDate)}" ${dis}></div>
+        <div class="field"><label class="f">Original invoice no. ${d.docType === 'INVOICE' ? '<span class="faint">(notes only)</span>' : ''}</label><input data-d="originalInvoiceNumber" value="${esc(d.originalInvoiceNumber)}" ${d.docType === 'INVOICE' ? 'disabled' : dis}></div>
+        <div class="field" style="grid-column:span 2"><label class="f">${isP ? 'Supplier' : 'Customer'} name *</label><input data-d="partyName" value="${esc(d.partyName)}" ${dis}></div>
+        <div class="field"><label class="f">${isP ? 'Supplier' : 'Customer'} GSTIN</label><input data-d="partyGSTIN" value="${esc(d.partyGSTIN)}" maxlength="15" style="text-transform:uppercase" ${dis}>
+          <div class="hint ${g.ok ? 'ok' : d.partyGSTIN ? 'bad' : ''}" id="party-hint">${g.ok ? '✓ ' + esc(g.state) : d.partyGSTIN ? esc(g.error) : isP ? 'Required for ITC' : 'Leave blank for unregistered (B2C)'}</div></div>
+        <div class="field"><label class="f">Place of supply</label><select data-d="placeOfSupply" ${dis}>${stateOptions(d.placeOfSupply, 'Auto (from GSTIN / business state)')}</select></div>
+        ${isP ? `<div class="field"><label class="f">Supplier state (if no GSTIN)</label><select data-d="supplierState" ${dis}>${stateOptions(d.supplierState, 'Same as business')}</select></div>
+          <div class="field"><label class="f">ITC category</label><select data-d="itcCategory" ${dis}>${[['BUSINESS', 'Business use — claimable'], ['BLOCKED', 'Blocked — Section 17(5)'], ['PERSONAL', 'Personal / non-business']].map(([k, v]) => `<option value="${k}" ${d.itcCategory === k ? 'selected' : ''}>${v}</option>`).join('')}</select></div>
+          <div class="field"><label class="f">Payment to supplier</label><select data-d="paymentStatus" ${can('write') ? '' : 'disabled'}><option value="UNPAID" ${d.paymentStatus !== 'PAID' ? 'selected' : ''}>Unpaid</option><option value="PAID" ${d.paymentStatus === 'PAID' ? 'selected' : ''}>Paid</option></select></div>
+          <div class="field"><label class="f">Paid on</label><input type="date" data-d="paidDate" value="${esc(d.paidDate)}" ${can('write') ? '' : 'disabled'}></div>` : ''}
+        <div class="field"><label class="f">Invoice total as printed <span class="faint">(optional check)</span></label><input type="number" step="0.01" data-d="declaredTotal" value="${esc(d.declaredTotal)}" ${dis}></div>
+        <div class="field" style="display:flex;align-items:center;gap:8px;padding-top:20px"><input type="checkbox" id="rcm" data-d="reverseCharge" ${d.reverseCharge ? 'checked' : ''} ${dis}><label for="rcm">Reverse charge applies</label></div>
+      </div>
+      <div class="table-wrap"><table class="t lines"><thead><tr><th>#</th><th style="min-width:180px">Description</th><th>HSN/SAC</th><th>Qty</th><th>Unit price</th><th>Taxable value *</th><th>GST rate</th><th>Cess ₹</th><th>Tax (engine)</th><th></th></tr></thead><tbody>
+        ${d.lines.map((l, i) => `<tr>
+          <td class="calc">${i + 1}</td>
+          <td><input data-l="${i}:description" value="${esc(l.description)}" ${dis}></td>
+          <td><input data-l="${i}:hsn" value="${esc(l.hsn)}" style="width:90px" ${dis}></td>
+          <td><input type="number" step="any" data-l="${i}:qty" value="${esc(l.qty)}" style="width:80px" ${dis}></td>
+          <td><input type="number" step="0.01" data-l="${i}:unitPrice" value="${esc(l.unitPrice)}" style="width:110px" ${dis}></td>
+          <td><input type="number" step="0.01" data-l="${i}:taxableValue" value="${esc(l.taxableValue)}" style="width:120px" ${dis}></td>
+          <td><select data-l="${i}:gstRate" style="width:86px" ${dis}>${rateOpts(l.gstRate)}</select></td>
+          <td><input type="number" step="0.01" data-l="${i}:cess" value="${esc(l.cess)}" style="width:90px" ${dis}></td>
+          <td class="calc" id="lt-${i}"></td>
+          <td>${!ro && d.lines.length > 1 ? `<button class="btn sm ghost danger" data-act="rm-line" data-i="${i}">✕</button>` : ''}</td></tr>`).join('')}
+      </tbody></table></div>
+      ${!ro ? `<button class="btn sm" data-act="add-line" style="margin-top:8px">+ Add line</button>` : ''}
+      <div id="inv-preview"></div>
+      <div class="field"><label class="f">Notes</label><textarea data-d="notes" rows="2" ${dis}>${esc(d.notes)}</textarea></div>
+    </div>
+    <div class="modal-foot">${S.draftId && can('write') && !ro ? `<button class="btn danger" data-act="delete-invoice" data-id="${S.draftId}" style="margin-right:auto">Delete</button>` : ''}
+      <button class="btn" data-act="close-modal">${ro ? 'Close' : 'Cancel'}</button>
+      ${!ro ? `<button class="btn primary" data-act="save-invoice">Save ${DOC_LABEL[d.docType].toLowerCase()}</button>` : (isP && can('write') && S.draftId ? `<button class="btn primary" data-act="save-payment">Save payment status</button>` : '')}</div>
+  </div></div>`;
+  updateInvoicePreview();
+}
+function draftAsInvoice() {
+  const inv = normalizeDraft(S.draft); inv.id = S.draftId || '__draft__'; return inv;
+}
+function updateInvoicePreview() {
+  if (!S.draft || !$('#inv-preview')) return;
+  const inv = draftAsInvoice(); const ctx = engineCtx();
+  if (S.draft.type === 'PURCHASE') ctx.payments[inv.id] = { status: S.draft.paymentStatus, paidDate: S.draft.paidDate };
+  const ev = evaluateInvoice(inv, ctx);
+  // per-line tax cells (lines in draft may include blank rows filtered out by normalizeDraft)
+  S.draft.lines.forEach((l, i) => {
+    const cell = $(`#lt-${i}`); if (!cell) return;
+    const taxable = round2(num(l.taxableValue)); const rate = num(l.gstRate);
+    const tax = (inv.type === 'SALE' && S.biz.registrationType === 'COMPOSITION') ? 0 : round2(taxable * rate / 100);
+    cell.textContent = ev.interState ? `IGST ${inr(tax)}` : `C ${inr(round2(tax / 2))} · S ${inr(round2(tax - round2(tax / 2)))}`;
+  });
+  const t = ev.totals;
+  $('#inv-preview').innerHTML = `
+    <div class="totals"><div><span>Taxable value</span><b>${inr(t.taxableValue)}</b></div><div><span>CGST</span><b>${inr(t.cgst)}</b></div><div><span>SGST</span><b>${inr(t.sgst)}</b></div><div><span>IGST</span><b>${inr(t.igst)}</b></div><div><span>Cess</span><b>${inr(t.cess)}</b></div><div style="background:var(--brand-soft)"><span>Total</span><b>${inr(t.totalAmount)}</b></div></div>
+    <div class="small muted" style="margin-bottom:8px">${ev.interState ? 'Inter-state supply → IGST' : 'Intra-state supply → CGST + SGST'} · Supplier state ${esc(stateName(ev.supplierState))} → Place of supply ${esc(stateName(ev.placeOfSupply))}${inv.type === 'PURCHASE' && ev.itcStatus ? ` · ITC: <span class="badge ${ITC_BADGE[ev.itcStatus]}">${ITC_LABEL[ev.itcStatus]}</span> ${esc(ev.itcReason)}` : ''}</div>
+    <div class="card" style="padding:12px 14px;box-shadow:none"><b class="small">Rules engine checks</b>
+      <div class="issue-list">${ev.issues.length ? ev.issues.map(i => `<div class="it"><span class="badge ${SEV_BADGE[i.severity]}">${i.severity}</span><span>${esc(i.description)}</span></div>`).join('') : `<div class="it"><span class="ic ok">✓</span> All checks passed — GSTIN, rates, tax split, totals, duplicates.</div>`}</div></div>`;
+}
+async function saveDraft() {
+  const d = S.draft; const err = m => { $('#inv-err').innerHTML = `<div class="notice bad">${esc(m)}</div>`; $('.modal-back').scrollTo(0, 0); };
+  if (!String(d.invoiceNumber).trim()) return err('Enter the document number.');
+  if (!parseDate(d.invoiceDate)) return err('Enter a valid date.');
+  if (fyOf(d.invoiceDate) !== S.fy) return err(`The date falls in FY ${fyOf(d.invoiceDate)}. Switch the financial year at the top to FY ${fyOf(d.invoiceDate)} to record it.`);
+  if (isLocked(d.invoiceDate.slice(0, 7))) return err(`${periodLabel(d.invoiceDate.slice(0, 7))} is locked. Choose a date in an open period.`);
+  const inv = normalizeDraft(d);
+  if (!inv.lines.length || inv.lines.some(l => l.taxableValue <= 0)) return err('Each line needs a taxable value greater than zero.');
+  if (d.type === 'PURCHASE' && d.paymentStatus === 'PAID' && !parseDate(d.paidDate)) return err('Enter the payment date.');
+  const btn = $('[data-act="save-invoice"]'); if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
+  try {
+    const payment = d.type === 'PURCHASE' ? { status: d.paymentStatus, paidDate: d.paymentStatus === 'PAID' ? d.paidDate : null } : null;
+    const [saved] = await saveInvoices([{ draft: d, id: S.draftId, payment }], 'manual',
+      { action: S.draftId ? 'INVOICE_UPDATED' : 'INVOICE_CREATED', entityId: S.draftId, meta: { invoiceNumber: inv.invoiceNumber, type: inv.type, docType: inv.docType } });
+    closeModal();
+    const n = saved.ev.issues.filter(i => i.severity !== 'LOW').length;
+    toast(`${DOC_LABEL[inv.docType]} ${inv.invoiceNumber} saved${n ? ` — ${n} issue(s) flagged` : ' — all checks passed'}.`);
+  } catch (e) { console.error(e); err(friendly(e)); if (btn) { btn.disabled = false; btn.textContent = 'Save'; } }
+}
+async function savePaymentOnly() {
+  const d = S.draft; const id = S.draftId; const inv = S.invoices.find(i => i.id === id);
+  if (d.paymentStatus === 'PAID' && !parseDate(d.paidDate)) return toast('Enter the payment date.', 'err');
+  await recordPayment(inv, d.paymentStatus, d.paymentStatus === 'PAID' ? d.paidDate : null); closeModal();
+}
+async function recordPayment(inv, status, paidDate) {
+  const bt = new Batcher(); const payment = { status, paidDate };
+  bt.op(b => b.set(bizRef('payments', inv.id), { ...payment, fy: inv.fy, invoiceNumber: inv.invoiceNumber, updatedBy: S.user.uid, updatedAt: serverTimestamp() }));
+  const ctx = engineCtx(); ctx.payments[inv.id] = payment;
+  const ev = evaluateInvoice(inv, ctx);
+  if (!isLocked(inv.period)) { const snap = clean(invoiceSnapshot(normalizeDraft(inv), ev)); delete snap.id; bt.op(b => b.update(bizRef('invoices', inv.id), { ...snap, updatedAt: serverTimestamp() })); }
+  syncIssues(bt, inv, ev.issues);
+  bt.op(b => auditIn(b, 'PAYMENT_RECORDED', 'invoice', inv.id, { invoiceNumber: inv.invoiceNumber, status, paidDate }));
+  await bt.commit(); toast(`Payment status saved for ${inv.invoiceNumber}.`);
+}
+function closeModal() { $('#modal-root').innerHTML = ''; S.draft = null; S.draftAI = null; S.aiFile = null; S.draftId = null; S.importPreview = null; S.twoBPreview = null; }
+
+/* ---------- invoice import ---------- */
+const IMPORT_HEADERS = ['docType', 'invoiceNumber', 'invoiceDate', 'partyName', 'partyGSTIN', 'placeOfSupply', 'reverseCharge', 'description', 'hsn', 'qty', 'unitPrice', 'taxableValue', 'gstRate', 'cess', 'cgst', 'sgst', 'igst', 'invoiceTotal', 'paymentStatus', 'paidDate', 'itcCategory'];
+const HEADER_ALIASES = {
+  doctype: 'docType', documenttype: 'docType', type: 'docType', invoicenumber: 'invoiceNumber', invoiceno: 'invoiceNumber', invno: 'invoiceNumber', number: 'invoiceNumber', documentnumber: 'invoiceNumber',
+  invoicedate: 'invoiceDate', date: 'invoiceDate', partyname: 'partyName', name: 'partyName', suppliername: 'partyName', customername: 'partyName', tradename: 'partyName',
+  partygstin: 'partyGSTIN', gstin: 'partyGSTIN', suppliergstin: 'partyGSTIN', customergstin: 'partyGSTIN', gstinuin: 'partyGSTIN', placeofsupply: 'placeOfSupply', pos: 'placeOfSupply',
+  reversecharge: 'reverseCharge', rcm: 'reverseCharge', description: 'description', item: 'description', hsn: 'hsn', sac: 'hsn', hsnsac: 'hsn', hsncode: 'hsn', qty: 'qty', quantity: 'qty',
+  unitprice: 'unitPrice', rate: 'unitPrice', price: 'unitPrice', taxablevalue: 'taxableValue', taxable: 'taxableValue', taxableamount: 'taxableValue', gstrate: 'gstRate', taxrate: 'gstRate', gst: 'gstRate',
+  cess: 'cess', cessamount: 'cess', cgst: 'cgst', sgst: 'sgst', utgst: 'sgst', igst: 'igst', invoicetotal: 'invoiceTotal', invoicevalue: 'invoiceTotal', total: 'invoiceTotal', totalamount: 'invoiceTotal',
+  paymentstatus: 'paymentStatus', paiddate: 'paidDate', paymentdate: 'paidDate', itccategory: 'itcCategory'
+};
+function mapRow(raw) { const o = {}; for (const [k, v] of Object.entries(raw)) { const key = HEADER_ALIASES[String(k).toLowerCase().replace(/[^a-z]/g, '')]; if (key && o[key] === undefined) o[key] = v; } return o; }
+function parsePOS(v) {
+  const s = String(v ?? '').trim(); if (!s) return '';
+  const m = s.match(/^(\d{1,2})/); if (m && STATE_CODES[pad(m[1])]) return pad(m[1]);
+  const hit = Object.entries(STATE_CODES).find(([, n]) => n.toLowerCase() === s.toLowerCase().replace(/^\d+\s*-\s*/, ''));
+  return hit ? hit[0] : null;
+}
+function buildImport(rows, type) {
+  const groups = new Map(); const errors = [];
+  rows.forEach((raw, idx) => {
+    const r = mapRow(raw); const line = idx + 2;
+    if (Object.values(r).every(v => String(v ?? '').trim() === '')) return;
+    const no = String(r.invoiceNumber ?? '').trim(); const date = parseDate(r.invoiceDate);
+    if (!no) return errors.push(`Row ${line}: invoice number missing.`);
+    if (!date) return errors.push(`Row ${line}: invalid date "${r.invoiceDate}" (use DD-MM-YYYY or YYYY-MM-DD).`);
+    if (fyOf(date) !== S.fy) return errors.push(`Row ${line}: ${no} is dated ${fmtDate(date)} — outside FY ${S.fy}.`);
+    if (isLocked(date.slice(0, 7))) return errors.push(`Row ${line}: ${no} — ${periodLabel(date.slice(0, 7))} is locked.`);
+    const pos = parsePOS(r.placeOfSupply); if (pos === null) return errors.push(`Row ${line}: unknown place of supply "${r.placeOfSupply}".`);
+    const docType = /credit/i.test(r.docType) ? 'CREDIT_NOTE' : /debit/i.test(r.docType) ? 'DEBIT_NOTE' : 'INVOICE';
+    const gstin = String(r.partyGSTIN ?? '').trim().toUpperCase();
+    let taxable = num(r.taxableValue); if (!taxable && num(r.qty) && num(r.unitPrice)) taxable = round2(num(r.qty) * num(r.unitPrice));
+    if (taxable <= 0) return errors.push(`Row ${line}: ${no} — taxable value missing.`);
+    const hasDecl = ['cgst', 'sgst', 'igst'].some(k => String(r[k] ?? '').trim() !== '');
+    const key = `${docType}|${normNo(no)}|${gstin}`;
+    if (!groups.has(key)) {
+      const pay = /^paid$/i.test(String(r.paymentStatus || '').trim());
+      groups.set(key, { draft: { type, docType, invoiceNumber: no, invoiceDate: date, partyName: String(r.partyName ?? '').trim(), partyGSTIN: gstin, placeOfSupply: pos, supplierState: '',
+        reverseCharge: /^(y|yes|true|1)$/i.test(String(r.reverseCharge ?? '').trim()), itcCategory: /block/i.test(r.itcCategory) ? 'BLOCKED' : /personal/i.test(r.itcCategory) ? 'PERSONAL' : 'BUSINESS',
+        declaredTotal: String(r.invoiceTotal ?? '').trim() === '' ? '' : num(r.invoiceTotal), originalInvoiceNumber: '', notes: '', lines: [] },
+        payment: type === 'PURCHASE' ? { status: pay ? 'PAID' : 'UNPAID', paidDate: pay ? parseDate(r.paidDate) : null } : null });
+    }
+    groups.get(key).draft.lines.push({ description: String(r.description ?? ''), hsn: String(r.hsn ?? '').trim(), qty: num(r.qty), unitPrice: num(r.unitPrice), taxableValue: taxable,
+      gstRate: num(r.gstRate), cess: num(r.cess), declared: hasDecl ? { cgst: num(r.cgst), sgst: num(r.sgst), igst: num(r.igst) } : null });
+  });
+  return { items: [...groups.values()], errors };
+}
+function openImport(type) {
+  S.importPreview = { type, items: [], errors: [] };
+  $('#modal-root').innerHTML = `<div class="modal-back"><div class="modal">
+    <div class="modal-head"><h3>Import ${type === 'SALE' ? 'sales' : 'purchases'}</h3><button class="x" data-act="close-modal">×</button></div>
+    <div class="modal-body">
+      <p class="muted">Upload an Excel (.xlsx) or CSV file — one row per line item. Rows with the same invoice number and GSTIN are combined into one invoice. Every invoice goes through the rules engine.</p>
+      <p><button class="btn sm" data-act="import-template" data-type="${type}">Download template</button></p>
+      <input type="file" accept=".csv,.xlsx,.xls" data-file="import">
+      <div id="import-preview" style="margin-top:14px"></div>
+    </div>
+    <div class="modal-foot"><button class="btn" data-act="close-modal">Cancel</button><button class="btn primary" data-act="do-import" disabled>Import</button></div></div></div>`;
+}
+function importTemplate(type) {
+  const sample = type === 'SALE'
+    ? [['Invoice', 'INV-1024', '20-09-2026', 'XYZ Pvt Ltd', '27AAPFU0939F1ZV', '', 'N', 'Consulting services', '998311', '1', '100000', '100000', '18', '', '', '', '18000', '118000', '', '', ''],
+      ['Invoice', 'INV-1025', '21-09-2026', 'Walk-in customer', '', '29', 'N', 'Product A', '8471', '2', '5000', '10000', '18', '', '900', '900', '', '11800', '', '', '']]
+    : [['Invoice', 'ABC/881', '12-09-2026', 'ABC Traders', '27AAPFU0939F1ZV', '', 'N', 'Office chairs', '9401', '10', '4500', '45000', '18', '', '', '', '8100', '53100', 'Unpaid', '', 'Business']];
+  download(`taxpilot-${type === 'SALE' ? 'sales' : 'purchases'}-template.csv`, toCSV([IMPORT_HEADERS, ...sample]), 'text/csv');
+}
+
+/* ---------- issues ---------- */
+function viewIssues() {
+  const f = S.f;
+  const types = [...new Set(S.issues.map(i => i.type))].sort();
+  const list = S.issues
+    .filter(i => f.issueStatus === 'ALL' || (f.issueStatus === 'ACTIVE' ? ['OPEN', 'UNDER_REVIEW'].includes(i.status) : i.status === f.issueStatus))
+    .filter(i => !f.issueSev || i.severity === f.issueSev).filter(i => !f.issueType || i.type === f.issueType)
+    .filter(i => f.month === 'ALL' || i.period === (f.month === 'CUR' ? S.period : f.month))
+    .sort((a, b) => sevRank(a) - sevRank(b) || (b.detectedAt?.seconds || 0) - (a.detectedAt?.seconds || 0));
+  const monthOpts = `<option value="CUR" ${f.month === 'CUR' ? 'selected' : ''}>Selected period (${periodLabel(S.period)})</option><option value="ALL" ${f.month === 'ALL' ? 'selected' : ''}>All of FY ${S.fy}</option>`;
+  return pageHead('Issues Center', 'Every problem detected by the rules engine becomes a tracked issue. Resolve = fixed · Ignore = accepted as is.',
+    can('write') ? `<button class="btn primary" data-act="run-checks">Re-run all checks</button>` : '')
+    + `<div class="toolbar no-print">
+      <select data-filter="issueStatus">${[['ACTIVE', 'Open + under review'], ['OPEN', 'Open'], ['UNDER_REVIEW', 'Under review'], ['RESOLVED', 'Resolved'], ['IGNORED', 'Ignored'], ['ALL', 'All statuses']].map(([v, l]) => `<option value="${v}" ${f.issueStatus === v ? 'selected' : ''}>${l}</option>`).join('')}</select>
+      <select data-filter="issueSev"><option value="">All severities</option>${['HIGH', 'MEDIUM', 'LOW'].map(s => `<option ${f.issueSev === s ? 'selected' : ''}>${s}</option>`).join('')}</select>
+      <select data-filter="issueType"><option value="">All types</option>${types.map(t => `<option value="${t}" ${f.issueType === t ? 'selected' : ''}>${t.replace(/_/g, ' ')}</option>`).join('')}</select>
+      <select data-filter="month">${monthOpts}</select></div>
+    <div class="table-wrap"><table class="t"><thead><tr><th>Severity</th><th>Issue</th><th>Document</th><th>Period</th><th>Detected</th><th>Status</th><th class="no-print">Actions</th></tr></thead><tbody>
+    ${list.length ? list.map(i => `<tr>
+      <td><span class="badge ${SEV_BADGE[i.severity]}">${i.severity}</span></td>
+      <td><b>${esc(i.type.replace(/_/g, ' '))}</b><div class="small muted">${esc(i.description)}</div>${i.resolution ? `<div class="small faint">↳ ${esc(i.resolution)}${i.resolvedBy ? ' — ' + esc(i.resolvedBy) : ''}</div>` : ''}</td>
+      <td><a href="#" data-act="open-invoice" data-id="${i.transactionId}">${esc(i.invoiceNumber)}</a><div class="small faint">${i.invoiceType === 'SALE' ? 'Sale' : 'Purchase'} · ${esc(i.partyName || '')}</div></td>
+      <td class="small">${periodLabel(i.period)}</td><td class="small">${tsStr(i.detectedAt)}</td>
+      <td><span class="badge ${ISSUE_STATUS_BADGE[i.status]}">${i.status.replace('_', ' ')}</span></td>
+      <td class="no-print" style="white-space:nowrap">${can('issues') ? issueActions(i) : ''}</td></tr>`).join('') : `<tr><td colspan="7"><div class="empty">No issues match this filter.</div></td></tr>`}
+    </tbody></table></div>`;
+}
+function issueActions(i) {
+  const b = (st, l) => `<button class="btn sm" data-act="issue-status" data-id="${i.id}" data-st="${st}">${l}</button>`;
+  if (i.status === 'OPEN') return b('UNDER_REVIEW', 'Review') + ' ' + b('RESOLVED', 'Resolve') + ' ' + b('IGNORED', 'Ignore');
+  if (i.status === 'UNDER_REVIEW') return b('RESOLVED', 'Resolve') + ' ' + b('IGNORED', 'Ignore');
+  return b('OPEN', 'Reopen');
+}
+async function setIssueStatus(id, st) {
+  const i = S.issues.find(x => x.id === id); if (!i) return;
+  let resolution = null;
+  if (st === 'RESOLVED' || st === 'IGNORED') { resolution = prompt(st === 'RESOLVED' ? 'How was this resolved?' : 'Why is this being ignored?'); if (resolution === null) return; }
+  const b = writeBatch(db); const now = serverTimestamp(); const who = S.user.displayName || S.user.email;
+  b.update(bizRef('issues', id), { status: st, resolution: resolution || (st === 'OPEN' ? null : i.resolution || null), resolvedBy: ['RESOLVED', 'IGNORED'].includes(st) ? who : null, resolvedByUid: ['RESOLVED', 'IGNORED'].includes(st) ? S.user.uid : null, resolvedAt: ['RESOLVED', 'IGNORED'].includes(st) ? now : null, updatedAt: now });
+  auditIn(b, 'ISSUE_STATUS_CHANGED', 'issue', id, { from: i.status, to: st, type: i.type, invoiceNumber: i.invoiceNumber, resolution });
+  await b.commit();
+}
+
+/* ---------- reconciliation ---------- */
+function reconData() {
+  const purchases = S.invoices.filter(i => i.type === 'PURCHASE');
+  const bookKeys = new Set(purchases.map(i => reconKey(i.docType, String(i.partyGSTIN || '').toUpperCase(), i.invoiceNumber)));
+  const missingInBooks = S.gstr2b.filter(r => !bookKeys.has(reconKey(r.docType, r.supplierGSTIN, r.invoiceNumber)));
+  return { purchases, missingInBooks };
+}
+function viewRecon() {
+  const f = S.f; const { purchases, missingInBooks } = reconData();
+  const periods2B = [...new Set(S.gstr2b.map(r => r.period))].sort();
+  const count = st => purchases.filter(i => S.evals.get(i.id)?.reconStatus === st).length;
+  const inPeriod = f.month === 'ALL' ? purchases : purchases.filter(i => i.period === (f.month === 'CUR' ? S.period : f.month));
+  const mib = f.month === 'ALL' ? missingInBooks : missingInBooks.filter(r => r.period === (f.month === 'CUR' ? S.period : f.month));
+  const kpi = (l, v, cls = '') => `<div class="kpi"><div class="l">${l}</div><div class="v ${cls}">${v}</div></div>`;
+  return pageHead('GST Reconciliation', 'Purchase register (books) vs GSTR-2B',
+    can('write') ? `<button class="btn" data-act="run-checks">Run reconciliation</button><button class="btn primary" data-act="import-2b">Import GSTR-2B</button>` : '')
+    + `<div class="notice info">GSTR-2B imported for: ${periods2B.length ? periods2B.map(periodLabel).join(', ') : '<b>none yet</b> — download the GSTR-2B JSON from the GST portal (Returns → GSTR-2B → Download JSON) and import it here.'}</div>
+    <div class="kpis">${kpi('Matched', count('MATCHED'))}${kpi('Amount mismatch', count('AMOUNT_MISMATCH'))}${kpi('Missing in GSTR-2B', count('MISSING_IN_2B'))}${kpi('In 2B, missing in books', missingInBooks.length)}</div>
+    <div class="toolbar no-print"><select data-filter="month"><option value="CUR" ${f.month === 'CUR' ? 'selected' : ''}>Selected period (${periodLabel(S.period)})</option><option value="ALL" ${f.month === 'ALL' ? 'selected' : ''}>All of FY ${S.fy}</option></select></div>
+    <div class="tabs">${[['books', `Books vs 2B (${inPeriod.length})`], ['missing', `Missing in books (${mib.length})`]].map(([k, l]) => `<button data-act="tab" data-k="reconTab" data-v="${k}" class="${f.reconTab === k ? 'on' : ''}">${l}</button>`).join('')}</div>
+    ${f.reconTab === 'books' ? `<div class="table-wrap"><table class="t"><thead><tr><th>Invoice</th><th>Supplier</th><th class="num">Books taxable</th><th class="num">Books tax</th><th class="num">2B taxable</th><th class="num">2B tax</th><th>Status</th></tr></thead><tbody>
+      ${inPeriod.length ? inPeriod.map(i => { const ev = S.evals.get(i.id); if (!ev) return ''; const bt = round2(ev.totals.igst + ev.totals.cgst + ev.totals.sgst); return `<tr class="click" data-act="open-invoice" data-id="${i.id}">
+        <td><b>${esc(i.invoiceNumber)}</b><div class="small faint">${fmtDate(i.invoiceDate)}</div></td><td>${esc(i.partyName)}<div class="small faint">${esc(i.partyGSTIN)}</div></td>
+        <td class="num">${inr(ev.totals.taxableValue)}</td><td class="num">${inr(bt)}</td>
+        <td class="num">${ev.recon ? inr(ev.recon.taxableValue) : '—'}</td><td class="num">${ev.recon ? inr(ev.recon.tax) : '—'}</td>
+        <td><span class="badge ${RECON_BADGE[ev.reconStatus]}">${RECON_LABEL[ev.reconStatus]}</span></td></tr>`; }).join('') : `<tr><td colspan="7"><div class="empty">No purchases in this period.</div></td></tr>`}
+      </tbody></table></div>`
+    : `<div class="table-wrap"><table class="t"><thead><tr><th>2B period</th><th>Supplier</th><th>Document</th><th>Date</th><th class="num">Taxable</th><th class="num">Tax</th><th>ITC available</th><th></th></tr></thead><tbody>
+      ${mib.length ? mib.map(r => `<tr><td class="small">${periodLabel(r.period)}</td><td>${esc(r.supplierName || '')}<div class="small faint">${esc(r.supplierGSTIN)}</div></td><td><b>${esc(r.invoiceNumber)}</b> ${r.docType !== 'INVOICE' ? `<span class="badge b-info">${r.docType === 'CREDIT_NOTE' ? 'CN' : 'DN'}</span>` : ''}</td>
+        <td class="small">${fmtDate(r.invoiceDate)}</td><td class="num">${inr(r.taxableValue)}</td><td class="num">${inr(num(r.igst) + num(r.cgst) + num(r.sgst))}</td><td>${r.itcAvailable === false ? '<span class="badge b-bad">No</span>' : '<span class="badge b-ok">Yes</span>'}</td>
+        <td>${can('write') ? `<button class="btn sm" data-act="add-from-2b" data-id="${r.id}">Add to books</button>` : ''}</td></tr>`).join('') : `<tr><td colspan="8"><div class="empty">Nothing missing — every GSTR-2B document is in your purchase register.</div></td></tr>`}
+      </tbody></table></div>`}`;
+}
+function parse2B(obj) {
+  const d = obj.data || obj; const dd = d.docdata || d.docData || {}; const rows = [];
+  let period = null; const rp = String(d.rtnprd || d.ret_period || '');
+  if (/^\d{6}$/.test(rp)) period = `${rp.slice(2)}-${rp.slice(0, 2)}`;
+  const taxOf = x => { if (Array.isArray(x.items) && x.items.length && x.txval === undefined) return x.items.reduce((a, it) => ({ txval: a.txval + num(it.txval), igst: a.igst + num(it.igst), cgst: a.cgst + num(it.cgst), sgst: a.sgst + num(it.sgst), cess: a.cess + num(it.cess) }), { txval: 0, igst: 0, cgst: 0, sgst: 0, cess: 0 }); return { txval: num(x.txval), igst: num(x.igst), cgst: num(x.cgst), sgst: num(x.sgst), cess: num(x.cess) }; };
+  for (const s of dd.b2b || []) for (const x of s.inv || []) { const t = taxOf(x); rows.push({ supplierGSTIN: String(s.ctin || '').toUpperCase(), supplierName: s.trdnm || '', docType: 'INVOICE', invoiceNumber: x.inum, invoiceDate: parseDate(x.dt), invoiceValue: num(x.val), taxableValue: t.txval, igst: t.igst, cgst: t.cgst, sgst: t.sgst, cess: t.cess, itcAvailable: x.itcavl !== 'N', reverseCharge: x.rev === 'Y' }); }
+  for (const s of dd.cdnr || []) for (const x of s.nt || []) { const t = taxOf(x); rows.push({ supplierGSTIN: String(s.ctin || '').toUpperCase(), supplierName: s.trdnm || '', docType: x.typ === 'D' ? 'DEBIT_NOTE' : 'CREDIT_NOTE', invoiceNumber: x.ntnum, invoiceDate: parseDate(x.dt), invoiceValue: num(x.val), taxableValue: t.txval, igst: t.igst, cgst: t.cgst, sgst: t.sgst, cess: t.cess, itcAvailable: x.itcavl !== 'N', reverseCharge: x.rev === 'Y' }); }
+  return { period, rows };
+}
+function parse2BRows(raw) {
+  return raw.map(mapRow).filter(r => r.invoiceNumber).map(r => ({ supplierGSTIN: String(r.partyGSTIN || '').toUpperCase().trim(), supplierName: String(r.partyName || ''), docType: /credit/i.test(r.docType) ? 'CREDIT_NOTE' : /debit/i.test(r.docType) ? 'DEBIT_NOTE' : 'INVOICE',
+    invoiceNumber: String(r.invoiceNumber).trim(), invoiceDate: parseDate(r.invoiceDate), invoiceValue: num(r.invoiceTotal), taxableValue: num(r.taxableValue), igst: num(r.igst), cgst: num(r.cgst), sgst: num(r.sgst), cess: num(r.cess), itcAvailable: true, reverseCharge: false }));
+}
+function open2BImport() {
+  S.twoBPreview = null;
+  $('#modal-root').innerHTML = `<div class="modal-back"><div class="modal">
+    <div class="modal-head"><h3>Import GSTR-2B</h3><button class="x" data-act="close-modal">×</button></div>
+    <div class="modal-body">
+      <p class="muted">Upload the <b>GSTR-2B JSON</b> downloaded from the GST portal (recommended), or a CSV/Excel with columns: partyGSTIN, partyName, docType, invoiceNumber, invoiceDate, invoiceTotal, taxableValue, igst, cgst, sgst, cess.</p>
+      <div class="field"><label class="f">Return period (used if the file has none)</label><select id="twob-period">${fyMonths(S.fy).map(p => `<option value="${p}" ${p === S.period ? 'selected' : ''}>${periodLabel(p)}</option>`).join('')}</select></div>
+      <input type="file" accept=".json,.csv,.xlsx,.xls" data-file="2b">
+      <div id="twob-preview" style="margin-top:14px"></div>
+      <div class="small faint">Re-importing a period replaces its previous GSTR-2B data.</div>
+    </div>
+    <div class="modal-foot"><button class="btn" data-act="close-modal">Cancel</button><button class="btn primary" data-act="do-2b" disabled>Import</button></div></div></div>`;
+}
+async function do2BImport() {
+  const pv = S.twoBPreview; if (!pv) return;
+  const period = pv.period || $('#twob-period').value;
+  if (fyOf(period + '-01') !== S.fy) return toast(`GSTR-2B period ${periodLabel(period)} is outside FY ${S.fy}. Switch the financial year first.`, 'err');
+  const bt = new Batcher(); const fy = S.fy; const now = serverTimestamp();
+  for (const r of S.gstr2b.filter(r => r.period === period)) bt.op(b => b.delete(bizRef('gstr2b', r.id)));
+  const newRows = [];
+  for (const r of pv.rows) {
+    const id = `${period}_${r.docType}_${r.supplierGSTIN}_${normNo(r.invoiceNumber)}`.slice(0, 700);
+    const row = clean({ ...r, period, fy }); newRows.push({ id, ...row });
+    bt.op(b => b.set(bizRef('gstr2b', id), { ...row, importedBy: S.user.uid, importedAt: now }));
+  }
+  bt.op(b => auditIn(b, 'GSTR2B_IMPORTED', 'gstr2b', period, { period, rows: pv.rows.length }));
+  const btn = $('[data-act="do-2b"]'); btn.disabled = true; btn.textContent = 'Importing…';
+  try {
+    await bt.commit();
+    S.gstr2b = S.gstr2b.filter(r => r.period !== period).concat(newRows);
+    closeModal(); toast(`GSTR-2B for ${periodLabel(period)} imported (${pv.rows.length} documents). Reconciling…`);
+    await runChecks({}, true); toast('Reconciliation complete.');
+  } catch (e) { console.error(e); toast(friendly(e), 'err'); btn.disabled = false; btn.textContent = 'Import'; }
+}
+
+/* ---------- ITC ---------- */
+function viewITC() {
+  const p = S.period; const f = S.f; const g = gstr3b(p);
+  const tax = o => round2(o.igst + o.cgst + o.sgst + o.cess);
+  const purchases = S.invoices.filter(i => i.type === 'PURCHASE');
+  const list = purchases.filter(i => i.period === p).filter(i => !f.itc || S.evals.get(i.id)?.itcStatus === f.itc);
+  const unpaid = purchases.filter(i => (S.payments[i.id]?.status !== 'PAID') && i.docType !== 'CREDIT_NOTE' && !i.reverseCharge)
+    .map(i => ({ i, due: addDays(i.invoiceDate, 180), days: daysBetween(i.invoiceDate, todayISO()) })).sort((a, b) => a.due.localeCompare(b.due));
+  const totalPurchaseGst = purchases.filter(i => i.period === p).reduce((a, i) => a + sgn(i) * tax(S.evals.get(i.id)?.totals || zero()), 0);
+  const kpi = (l, v, s = '') => `<div class="kpi"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${s}</div></div>`;
+  return pageHead('ITC Analysis', `Input Tax Credit for ${periodLabel(p)} · Section 16(4) deadline for FY ${S.fy}: ${fmtDate(itcDeadline(S.fy))}`)
+    + (S.biz.registrationType === 'COMPOSITION' ? `<div class="notice warn">Composition taxpayers cannot claim ITC.</div>` : '')
+    + `<div class="kpis">
+      ${kpi('Total purchase GST', inr0(totalPurchaseGst), `${purchases.filter(i => i.period === p).length} documents`)}
+      ${kpi('Eligible ITC (claimable)', inr0(tax(g.itcTotal)), `RCM ${inr0(tax(g.itcRcm))} · Others ${inr0(tax(g.itcOther))}`)}
+      ${kpi('Pending / needs review', inr0(tax(g.itcPending)), 'awaiting GSTR-2B match or review')}
+      ${kpi('Blocked / not eligible', inr0(tax(g.itcBlocked) + tax(g.itcNotEligible)), `Blocked ${inr0(tax(g.itcBlocked))}`)}
+    </div>
+    ${tax(g.rule37) ? `<div class="notice bad">Rule 37: ${inr(tax(g.rule37))} of ITC claimed in earlier approved periods must be reversed in this return (GSTR-3B Table 4(B)(2)) — suppliers unpaid beyond 180 days.</div>` : ''}
+    <div class="toolbar no-print"><select data-filter="itc"><option value="">All ITC statuses</option>${Object.entries(ITC_LABEL).map(([k, v]) => `<option value="${k}" ${f.itc === k ? 'selected' : ''}>${v}</option>`).join('')}</select></div>
+    <div class="table-wrap"><table class="t"><thead><tr><th>Invoice</th><th>Supplier</th><th class="num">Tax</th><th>ITC status</th><th>Reason</th></tr></thead><tbody>
+    ${list.length ? list.map(i => { const ev = S.evals.get(i.id); if (!ev) return ''; return `<tr class="click" data-act="open-invoice" data-id="${i.id}"><td><b>${esc(i.invoiceNumber)}</b><div class="small faint">${fmtDate(i.invoiceDate)}</div></td><td>${esc(i.partyName)}<div class="small faint">${esc(i.partyGSTIN)}</div></td><td class="num">${inr(sgn(i) * ev.totals.totalTax)}</td><td><span class="badge ${ITC_BADGE[ev.itcStatus]}">${ITC_LABEL[ev.itcStatus]}</span></td><td class="small muted">${esc(ev.itcReason)}</td></tr>`; }).join('') : `<tr><td colspan="5"><div class="empty">No purchases in ${periodLabel(p)}.</div></td></tr>`}
+    </tbody></table></div>
+    <div class="card" style="margin-top:16px"><h3>Rule 37 — supplier payment watchlist (FY ${S.fy})</h3>
+      <p class="small muted">ITC must be reversed if the supplier is not paid within 180 days of the invoice date. Record payments here — this works even for locked periods.</p>
+      <div class="table-wrap"><table class="t"><thead><tr><th>Invoice</th><th>Supplier</th><th class="num">Invoice value</th><th>Pay by</th><th>Status</th><th></th></tr></thead><tbody>
+      ${unpaid.length ? unpaid.map(({ i, due, days }) => { const left = daysBetween(todayISO(), due); return `<tr><td><b>${esc(i.invoiceNumber)}</b><div class="small faint">${fmtDate(i.invoiceDate)}</div></td><td>${esc(i.partyName)}</td><td class="num">${inr(i.totalAmount)}</td><td>${fmtDate(due)}</td>
+        <td>${left < 0 ? `<span class="badge b-bad">Overdue ${-left}d — reverse ITC</span>` : left <= 30 ? `<span class="badge b-warn">${left} days left</span>` : `<span class="badge">${left} days left</span>`}</td>
+        <td>${can('write') ? `<button class="btn sm" data-act="mark-paid" data-id="${i.id}">Mark paid</button>` : ''}</td></tr>`; }).join('') : `<tr><td colspan="6"><div class="empty">All supplier invoices are marked paid.</div></td></tr>`}
+      </tbody></table></div></div>`;
+}
+
+/* ---------- returns ---------- */
+function returnChecks(p) {
+  const openHigh = S.issues.filter(i => i.period === p && ['OPEN', 'UNDER_REVIEW'].includes(i.status) && i.severity === 'HIGH');
+  const openMed = S.issues.filter(i => i.period === p && ['OPEN', 'UNDER_REVIEW'].includes(i.status) && i.severity === 'MEDIUM');
+  const purchases = S.invoices.filter(i => i.period === p && i.type === 'PURCHASE' && !i.reverseCharge);
+  const unrec = purchases.filter(i => !['MATCHED'].includes(S.evals.get(i.id)?.reconStatus));
+  const months = fyMonths(S.fy); const prev = months.indexOf(p) > 0 ? months[months.indexOf(p) - 1] : null;
+  return [
+    { ok: !openHigh.length, blocking: true, label: 'No open high-severity issues', detail: openHigh.length ? `${openHigh.length} high-severity issue(s) open` : '' },
+    { ok: !openMed.length, label: 'No open medium-severity issues', detail: openMed.length ? `${openMed.length} open — review or ignore with a reason` : '' },
+    { ok: S.gstr2b.some(r => r.period === p) || !purchases.length, label: 'GSTR-2B imported for this period', detail: 'Without GSTR-2B no ITC can be claimed' },
+    { ok: !unrec.length, label: 'All purchases reconciled with GSTR-2B', detail: unrec.length ? `${unrec.length} purchase(s) not matched — their ITC is excluded` : '' },
+    { ok: !prev || isLocked(prev) || !S.invoices.some(i => i.period === prev), label: 'Previous period approved', detail: prev && !isLocked(prev) ? `${periodLabel(prev)} is still open` : '' },
+    { ok: S.invoices.some(i => i.period === p), label: 'Transactions recorded for this period', detail: 'No invoices — this would be a nil return' }
+  ];
+}
+function viewReturns() {
+  const p = S.period; const f = S.f; const per = S.periods[p]; const locked = isLocked(p);
+  const status = per?.status || 'OPEN';
+  if (S.biz.registrationType === 'COMPOSITION') return pageHead('GST Returns', periodLabel(p)) + `<div class="notice info">Composition taxpayers file CMP-08 (quarterly) and GSTR-4 (annual) instead of GSTR-1/GSTR-3B. Due: ${dueDates(p).map(d => `${d.form} ${fmtDate(d.date)}`).join(', ') || 'no statement due for this month'}.</div>`;
+  const live = { g3: gstr3b(p), g1: gstr1(p) };
+  const g3 = locked && per.summary ? per.summary.gstr3b : live.g3;
+  const g1 = locked && per.summary ? per.summary.gstr1 : live.g1;
+  const checks = returnChecks(p);
+  const row = (l, o, isItc) => `<tr><td>${l}</td><td class="num">${isItc ? '' : inr(o.taxableValue)}</td><td class="num">${inr(o.igst)}</td><td class="num">${inr(o.cgst)}</td><td class="num">${inr(o.sgst)}</td><td class="num">${inr(o.cess)}</td></tr>`;
+  const t3b = `
+    <div class="card"><h3>3.1 Outward and inward supplies liable to reverse charge</h3>
+      <div class="table-wrap"><table class="t"><thead><tr><th>Nature of supplies</th><th class="num">Taxable value</th><th class="num">IGST</th><th class="num">CGST</th><th class="num">SGST/UTGST</th><th class="num">Cess</th></tr></thead><tbody>
+      ${row('(a) Outward taxable supplies (other than zero/nil rated, exempted)', g3.o31a)}${row('(c) Other outward supplies (nil rated, exempted)', g3.o31c)}${row('(d) Inward supplies liable to reverse charge', g3.o31d)}
+      </tbody></table></div></div>
+    <div class="card" style="margin-top:14px"><h3>4. Eligible ITC</h3>
+      <div class="table-wrap"><table class="t"><thead><tr><th>Details</th><th></th><th class="num">IGST</th><th class="num">CGST</th><th class="num">SGST/UTGST</th><th class="num">Cess</th></tr></thead><tbody>
+      ${row('(A)(3) Inward supplies liable to reverse charge', g3.itcRcm, true)}${row('(A)(5) All other ITC', g3.itcOther, true)}${row('(B)(2) Reversal — Rule 37 (unpaid > 180 days)', g3.rule37, true)}
+      <tr><td><b>(C) Net ITC available</b></td><td></td><td class="num"><b>${inr(g3.netItc.igst)}</b></td><td class="num"><b>${inr(g3.netItc.cgst)}</b></td><td class="num"><b>${inr(g3.netItc.sgst)}</b></td><td class="num"><b>${inr(g3.netItc.cess)}</b></td></tr>
+      ${row('(D) Ineligible — blocked u/s 17(5) (not claimed)', g3.itcBlocked, true)}${row('Not claimed — pending GSTR-2B match / review', g3.itcPending, true)}
+      </tbody></table></div></div>
+    <div class="card" style="margin-top:14px"><h3>6. Payment of tax (ITC set-off)</h3>
+      <div class="table-wrap"><table class="t"><thead><tr><th></th><th class="num">IGST</th><th class="num">CGST</th><th class="num">SGST/UTGST</th><th class="num">Cess</th></tr></thead><tbody>
+      <tr><td>Tax liability (3.1a)</td>${['igst', 'cgst', 'sgst', 'cess'].map(k => `<td class="num">${inr(g3.liability[k])}</td>`).join('')}</tr>
+      <tr><td>Paid through ITC</td>${['igst', 'cgst', 'sgst', 'cess'].map(k => `<td class="num">${inr(round2(g3.liability[k] - g3.setOff.cash[k]))}</td>`).join('')}</tr>
+      <tr><td>Reverse charge (cash only)</td>${['igst', 'cgst', 'sgst', 'cess'].map(k => `<td class="num">${inr(g3.rcmCash[k])}</td>`).join('')}</tr>
+      <tr><td><b>Payable in cash</b></td>${['igst', 'cgst', 'sgst', 'cess'].map(k => `<td class="num"><b>${inr(g3.cash[k])}</b></td>`).join('')}</tr>
+      <tr><td class="muted">ITC carried forward</td>${['igst', 'cgst', 'sgst', 'cess'].map(k => `<td class="num muted">${inr(g3.setOff.carryForward[k])}</td>`).join('')}</tr>
+      </tbody></table></div>
+      <div class="small faint" style="margin-top:6px">Set-off order: IGST credit → IGST, CGST, SGST; CGST credit → CGST, IGST; SGST credit → SGST, IGST. CGST and SGST credits are never cross-utilised. Interest and late fee are not included.</div>
+      <div class="row" style="margin-top:10px"><b style="font-size:16px">Net cash payable: ${inr(g3.cash.total)}</b></div></div>`;
+  const sumRows = arr => arr.reduce((a, r) => acc(a, r, r.docType === 'CREDIT_NOTE' ? -1 : 1), zero());
+  const simple = (title, arr, withParty = true) => `<div class="card" style="margin-top:14px"><div class="row"><h3 style="margin:0">${title}</h3><span class="spacer"></span><span class="badge">${arr.length}</span></div>
+    ${arr.length ? `<div class="table-wrap" style="margin-top:8px"><table class="t"><thead><tr><th>Number</th><th>Date</th>${withParty ? '<th>Party</th>' : ''}<th>POS</th><th class="num">Taxable</th><th class="num">IGST</th><th class="num">CGST</th><th class="num">SGST</th><th class="num">Total</th></tr></thead><tbody>
+    ${arr.map(r => `<tr><td>${esc(r.invoiceNumber)}${r.docType ? ` <span class="badge">${r.docType === 'CREDIT_NOTE' ? 'CN' : 'DN'}</span>` : ''}${r.reverseCharge ? ' <span class="badge">RCM</span>' : ''}</td><td>${fmtDate(r.invoiceDate)}</td>${withParty ? `<td>${esc(r.partyName)}<div class="small faint">${esc(r.partyGSTIN)}</div></td>` : ''}<td>${esc(r.pos)}</td><td class="num">${inr(r.taxableValue)}</td><td class="num">${inr(r.igst)}</td><td class="num">${inr(r.cgst)}</td><td class="num">${inr(r.sgst)}</td><td class="num">${inr(r.totalAmount)}</td></tr>`).join('')}
+    </tbody><tfoot><tr><td colspan="${withParty ? 4 : 3}">Total</td>${(t => `<td class="num">${inr(t.taxableValue)}</td><td class="num">${inr(t.igst)}</td><td class="num">${inr(t.cgst)}</td><td class="num">${inr(t.sgst)}</td><td></td>`)(sumRows(arr))}</tr></tfoot></table></div>` : '<div class="small muted">None</div>'}</div>`;
+  const b2cs = Object.values(g1.b2cs); const hsn = Object.values(g1.hsn);
+  const t1 = simple('4A — B2B invoices', g1.b2b) + simple('5 — B2C Large (inter-state, invoice value > ₹1,00,000)', g1.b2cl)
+    + `<div class="card" style="margin-top:14px"><h3>7 — B2C Others (summary by place of supply & rate)</h3>${b2cs.length ? `<div class="table-wrap"><table class="t"><thead><tr><th>POS</th><th>Rate</th><th class="num">Taxable</th><th class="num">IGST</th><th class="num">CGST</th><th class="num">SGST</th><th class="num">Cess</th></tr></thead><tbody>${b2cs.map(r => `<tr><td>${esc(stateName(r.pos))}</td><td>${r.rate}%</td><td class="num">${inr(r.taxableValue)}</td><td class="num">${inr(r.igst)}</td><td class="num">${inr(r.cgst)}</td><td class="num">${inr(r.sgst)}</td><td class="num">${inr(r.cess)}</td></tr>`).join('')}</tbody></table></div>` : '<div class="small muted">None</div>'}</div>`
+    + simple('9B — Credit / debit notes (registered)', g1.cdnr) + simple('9B — Credit / debit notes (unregistered)', g1.cdnur)
+    + `<div class="card" style="margin-top:14px"><h3>8 — Nil rated / exempt supplies</h3><b>${inr(g1.nil)}</b></div>`
+    + `<div class="card" style="margin-top:14px"><h3>12 — HSN-wise summary</h3>${hsn.length ? `<div class="table-wrap"><table class="t"><thead><tr><th>HSN/SAC</th><th>Rate</th><th class="num">Qty</th><th class="num">Taxable</th><th class="num">IGST</th><th class="num">CGST</th><th class="num">SGST</th><th class="num">Cess</th></tr></thead><tbody>${hsn.map(h => `<tr><td>${esc(h.hsn)}</td><td>${h.rate}%</td><td class="num">${h.qty}</td><td class="num">${inr(h.taxableValue)}</td><td class="num">${inr(h.igst)}</td><td class="num">${inr(h.cgst)}</td><td class="num">${inr(h.sgst)}</td><td class="num">${inr(h.cess)}</td></tr>`).join('')}</tbody></table></div>` : '<div class="small muted">None</div>'}</div>`
+    + `<div class="card" style="margin-top:14px"><h3>13 — Documents issued</h3>${g1.docs.count} document(s)</div>`;
+  const statusBadge = { OPEN: ['', 'Open'], APPROVED: ['b-ok', 'Approved · locked'], FILED: ['b-brand', 'Filed'] }[status];
+  const blockers = checks.filter(c => c.blocking && !c.ok);
+  return pageHead(`GST Returns — ${periodLabel(p)}`, `Status: <span class="badge ${statusBadge[0]}">${statusBadge[1]}</span> · Due: ${dueDates(p).map(d => `${d.form} ${fmtDate(d.date)}`).join(' · ')}`,
+    `<button class="btn" data-act="export-return">Export JSON</button><button class="btn" data-act="export-gstr1-govt" title="For upload via the GST portal's Returns Offline Tool">Export GSTR-1 (for GST portal)</button><button class="btn" data-act="print">Print</button>`
+    + (status === 'OPEN' && can('approve') ? `<button class="btn primary" data-act="approve-return" ${blockers.length ? 'disabled title="Resolve high-severity issues first"' : ''}>Approve return</button>` : '')
+    + (status === 'APPROVED' && can('approve') ? `<button class="btn primary" data-act="mark-filed">Record filing (ARN)</button>` : '')
+    + (status === 'APPROVED' && can('team') ? `<button class="btn danger" data-act="unlock-return">Unlock</button>` : ''))
+    + (locked ? `<div class="notice ${status === 'FILED' ? 'info' : 'ok'}">${status === 'FILED' ? `Filed${per.arn ? ` · ARN ${esc(per.arn)}` : ''}${per.filedDate ? ` on ${fmtDate(per.filedDate)}` : ''}.` : ''} Approved by ${esc(per.approvedByName || '')} on ${tsStr(per.approvedAt)}. Showing the approved snapshot (engine v${esc(per.engineVersion || '')}).</div>` : '')
+    + `<div class="cols" style="margin-bottom:16px">
+      <div class="card"><h3>Return review</h3>
+        <div class="list-row"><span>Output GST</span><span class="spacer"></span><b>${inr(g3.outputTax)}</b></div>
+        <div class="list-row"><span>Eligible ITC (net)</span><span class="spacer"></span><b>${inr(g3.itcSum)}</b></div>
+        <div class="list-row"><span>Reverse charge payable</span><span class="spacer"></span><b>${inr(g3.rcmCash.igst + g3.rcmCash.cgst + g3.rcmCash.sgst + g3.rcmCash.cess)}</b></div>
+        <div class="list-row"><span><b>Net cash liability</b></span><span class="spacer"></span><b style="font-size:18px">${inr(g3.cash.total)}</b></div></div>
+      <div class="card checks"><h3>Pre-filing checks</h3>${checks.map(c => `<div class="ck"><span class="ic ${c.ok ? 'ok' : c.blocking ? 'bad' : 'warn'}">${c.ok ? '✓' : '!'}</span><div><b class="small">${c.label}</b>${!c.ok && c.detail ? `<div class="small muted">${esc(c.detail)}</div>` : ''}</div></div>`).join('')}
+        ${!locked && checks.some(c => !c.ok) ? `<a href="#/issues" class="btn sm" style="margin-top:8px">Review issues</a>` : ''}</div></div>
+    <div class="tabs">${[['3b', 'GSTR-3B'], ['1', 'GSTR-1']].map(([k, l]) => `<button data-act="tab" data-k="returnsTab" data-v="${k}" class="${f.returnsTab === k ? 'on' : ''}">${l}</button>`).join('')}</div>
+    ${f.returnsTab === '3b' ? t3b : t1}
+    <p class="small faint" style="margin-top:14px">Prepared by the TaxPilot AI rules engine for review. File on the GST portal (or through an authorised GSP integration, coming later) and record the ARN here. The JSON export is a summary, not the portal upload format.</p>`;
+}
+async function approveReturn() {
+  const p = S.period; const checks = returnChecks(p);
+  if (checks.some(c => c.blocking && !c.ok)) return toast('Resolve high-severity issues first.', 'err');
+  const warn = checks.filter(c => !c.ok);
+  if (!confirm(`Approve the ${periodLabel(p)} return?\n\n${warn.length ? 'Warnings:\n' + warn.map(w => '• ' + w.label + (w.detail ? ' — ' + w.detail : '')).join('\n') + '\n\n' : ''}Approving locks all invoices of this period.`)) return;
+  const g3 = gstr3b(p), g1 = gstr1(p);
+  const b = writeBatch(db); const who = S.user.displayName || S.user.email;
+  const data = { status: 'APPROVED', period: p, fy: S.fy, approvedBy: S.user.uid, approvedByName: who, approvedAt: serverTimestamp(), engineVersion: ENGINE_VERSION, summary: clean({ gstr3b: g3, gstr1: g1 }), updatedAt: serverTimestamp() };
+  b.set(bizRef('periods', p), data, { merge: true });
+  auditIn(b, 'RETURN_APPROVED', 'period', p, { period: p, outputTax: g3.outputTax, itc: g3.itcSum, cashPayable: g3.cash.total, warnings: warn.map(w => w.label) });
+  try { await b.commit(); toast(`${periodLabel(p)} approved and locked.`); } catch (e) { toast(friendly(e), 'err'); }
+}
+async function markFiled() {
+  const p = S.period; const arn = prompt('Enter the ARN (Acknowledgement Reference Number) from the GST portal:'); if (arn === null) return;
+  if (!arn.trim()) return toast('ARN is required.', 'err');
+  const filedDate = prompt('Filing date (DD-MM-YYYY):', fmtDate(todayISO())); const fd = parseDate(filedDate); if (!fd) return toast('Invalid date.', 'err');
+  const b = writeBatch(db);
+  b.update(bizRef('periods', p), { status: 'FILED', arn: arn.trim(), filedDate: fd, filedBy: S.user.uid, updatedAt: serverTimestamp() });
+  auditIn(b, 'RETURN_FILED', 'period', p, { period: p, arn: arn.trim(), filedDate: fd });
+  try { await b.commit(); toast(`${periodLabel(p)} recorded as filed.`); } catch (e) { toast(friendly(e), 'err'); }
+}
+async function unlockReturn() {
+  const p = S.period; const reason = prompt(`Why unlock ${periodLabel(p)}? (recorded in the audit trail)`); if (!reason) return;
+  const b = writeBatch(db);
+  b.update(bizRef('periods', p), { status: 'OPEN', unlockedBy: S.user.uid, unlockReason: reason, unlockedAt: serverTimestamp(), updatedAt: serverTimestamp() });
+  auditIn(b, 'RETURN_UNLOCKED', 'period', p, { period: p, reason });
+  try { await b.commit(); toast(`${periodLabel(p)} unlocked.`); } catch (e) { toast(friendly(e), 'err'); }
+}
+
+/* ---------- audit ---------- */
+function viewAudit() {
+  const label = a => a.replace(/_/g, ' ').toLowerCase().replace(/^./, c => c.toUpperCase());
+  const meta = m => Object.entries(m || {}).filter(([, v]) => v !== null && v !== '' && !(Array.isArray(v) && !v.length)).map(([k, v]) => `${esc(k)}: ${esc(typeof v === 'object' ? JSON.stringify(v) : v)}`).join(' · ');
+  return pageHead('Audit Trail', 'Every important action — who did what and when. Entries cannot be edited or deleted.')
+    + `<div class="table-wrap"><table class="t"><thead><tr><th>When</th><th>User</th><th>Action</th><th>Details</th></tr></thead><tbody>
+    ${S.audit.length ? S.audit.map(a => `<tr><td class="small" style="white-space:nowrap">${tsStr(a.timestamp)}</td><td>${esc(a.userName)}</td><td><b>${esc(label(a.action))}</b><div class="small faint">${esc(a.entityType)}</div></td><td class="small muted">${meta(a.metadata)}</td></tr>`).join('') : `<tr><td colspan="4"><div class="empty">No activity yet.</div></td></tr>`}
+    </tbody></table></div><p class="small faint">Showing the latest 300 entries.</p>`;
+}
+
+/* ---------- business & team ---------- */
+function viewBusiness() {
+  const b = S.biz; const me = S.user.uid;
+  return pageHead('Business & Team', `${esc(b.name)} · workspace ID ${esc(b.id)}`, `<a class="btn" href="#/onboarding">+ Add another business</a>`)
+    + viewInvitesBox()
+    + `<div class="cols"><div class="card"><h3>Business profile</h3>
+      ${can('editBiz') ? `<form data-form="update-business">${bizFields(b)}<div class="row"><span class="spacer"></span><button class="btn primary">Save changes</button></div></form>`
+      : `<div class="small">${[['GSTIN', b.gstin], ['PAN', b.pan], ['State', stateName(b.stateCode)], ['Legal name', b.legalName], ['Registration', b.registrationType], ['Filing', b.filingFrequency]].map(([k, v]) => `<div class="list-row"><span class="muted">${k}</span><span class="spacer"></span><b>${esc(v)}</b></div>`).join('')}</div>`}</div>
+    <div><div class="card"><h3>Team members</h3>
+      ${b.memberIds.map(uid => { const m = b.memberInfo?.[uid] || {}; const r = b.roles[uid]; return `<div class="list-row"><div class="avatar">${esc(initials(m.name || m.email))}</div><div><b>${esc(m.name || m.email || uid)}</b>${uid === me ? ' <span class="small faint">(you)</span>' : ''}<div class="small muted">${esc(m.email || '')}</div></div><span class="spacer"></span>
+        ${can('team') && uid !== me ? `<select data-change="member-role" data-uid="${uid}" style="width:auto">${Object.entries(ROLE_LABEL).map(([k, v]) => `<option value="${k}" ${r === k ? 'selected' : ''}>${v}</option>`).join('')}</select><button class="btn sm ghost danger" data-act="remove-member" data-uid="${uid}">✕</button>` : `<span class="badge b-brand">${ROLE_LABEL[r]}</span>`}</div>`; }).join('')}
+      ${Object.keys(b.invites || {}).length ? `<div class="sec small muted" style="margin-top:12px;font-weight:700">Pending invitations</div>${Object.entries(b.invites).map(([e, r]) => `<div class="list-row"><div><b>${esc(e)}</b><div class="small muted">${ROLE_LABEL[r]}</div></div><span class="spacer"></span>${can('team') ? `<button class="btn sm" data-act="cancel-invite" data-email="${esc(e)}">Cancel</button>` : ''}</div>`).join('')}` : ''}
+      ${can('team') ? `<form data-form="invite" style="margin-top:14px"><label class="f">Invite by email</label><div class="row"><input name="email" type="email" required placeholder="name@company.com" style="flex:1;width:auto"><select name="role" style="width:auto">${['ADMIN', 'ACCOUNTANT', 'CA', 'VIEWER'].map(k => `<option value="${k}">${ROLE_LABEL[k]}</option>`).join('')}</select><button class="btn primary">Invite</button></div>
+        <div class="hint">They sign up with this email, verify it, and accept the invitation from their dashboard.</div></form>` : ''}
+    </div>
+    <div class="card" style="margin-top:16px"><h3>My account</h3>
+      <div class="small muted" style="margin-bottom:10px">Signed in as <b>${esc(S.user.email)}</b>${S.user.emailVerified ? ' <span class="badge b-ok">verified</span>' : ' <span class="badge b-warn">not verified</span>'}</div>
+      <form data-form="change-email"><label class="f">Change email</label>
+        <div class="field"><input name="newEmail" type="email" required placeholder="new email address"></div>
+        <div class="field"><input name="password" type="password" required placeholder="current password" autocomplete="current-password"></div>
+        <button class="btn">Send verification link</button>
+        <div class="hint">A link is sent to the new address. Your email changes only after you click it; then sign in again with the new email.</div></form>
+      <form data-form="change-password" style="margin-top:16px"><label class="f">Change password</label>
+        <div class="field"><input name="password" type="password" required placeholder="current password" autocomplete="current-password"></div>
+        <div class="field"><input name="newPassword" type="password" required minlength="6" placeholder="new password (min 6 characters)" autocomplete="new-password"></div>
+        <button class="btn">Update password</button></form></div>
+    <div class="card" style="margin-top:16px"><h3>Role permissions</h3><div class="small">
+      <div class="list-row"><b>Owner</b><span class="spacer"></span><span class="muted">Everything, team, unlock periods</span></div>
+      <div class="list-row"><b>Admin</b><span class="spacer"></span><span class="muted">Data + business profile</span></div>
+      <div class="list-row"><b>Accountant</b><span class="spacer"></span><span class="muted">Invoices, imports, issues</span></div>
+      <div class="list-row"><b>Chartered Accountant</b><span class="spacer"></span><span class="muted">Review, issues, approve returns</span></div>
+      <div class="list-row"><b>Viewer</b><span class="spacer"></span><span class="muted">Read only</span></div></div></div></div></div>`;
+}
+async function teamUpdate(fn, auditArgs) {
+  const b = S.biz; const next = fn({ memberIds: [...b.memberIds], roles: { ...b.roles }, memberInfo: { ...(b.memberInfo || {}) }, invites: { ...(b.invites || {}) } });
+  next.inviteEmails = Object.keys(next.invites);
+  const bt = writeBatch(db);
+  bt.update(bizRef(), { ...next, updatedAt: serverTimestamp() });
+  auditIn(bt, ...auditArgs);
+  try { await bt.commit(); } catch (e) { toast(friendly(e), 'err'); throw e; }
+}
+
+/* ---------- assistant / setup ---------- */
+function setupSteps() {
+  return `<ol class="steps">
+    <li><b>Authentication:</b> Firebase Console → Authentication → Get started → Sign-in method → enable <b>Email/Password</b>.</li>
+    <li><b>Firestore:</b> Firebase Console → Firestore Database → Create database (production mode, region <b>asia-south1 (Mumbai)</b> recommended for Indian data).</li>
+    <li><b>Security rules:</b> Firestore Database → Rules → replace everything with the rules below → <b>Publish</b>.</li>
+    <li><b>Hosting / domain:</b> open this file through a web server (e.g. <code>http://localhost</code> or Firebase Hosting). Opening it directly as a file will not work with Firebase Authentication. For a custom domain, add it under Authentication → Settings → Authorized domains.</li>
+  </ol>`;
+}
+function rulesBox() {
+  return `<div class="row" style="margin-top:12px"><h3 style="margin:0">Firestore security rules</h3><span class="spacer"></span><button class="btn primary" data-act="copy-rules">Copy rules</button></div>
+    <p class="small muted">These rules enforce business isolation, roles, locked periods and an append-only audit trail on the server.</p>
+    <pre class="rules">${esc($('#fs-rules').textContent)}</pre>`;
+}
+function viewSetup() {
+  return pageHead('Setup', 'One-time Firebase configuration for project taxpilot-ai-d68c0')
+    + `<div class="card">${setupSteps()}</div><div class="card" style="margin-top:16px">${rulesBox()}</div>`;
+}
+
+/* =====================================================================
+   EVENTS
+   ===================================================================== */
+const actions = {
+  'retry-boot': async () => { S.bootError = ''; try { await withTimeout(ensureProfile(), 15000, BOOT_TIMEOUT_MSG); } catch (e) { S.bootError = friendly(e); render(); return; } await reboot(); },
+  'nav': () => { S.navOpen = !S.navOpen; $('.side')?.classList.toggle('open', S.navOpen); },
+  'logout': async () => { unsubAll(); S.biz = null; await signOut(auth); location.hash = '#/'; },
+  'resend-verify': async () => { try { await sendEmailVerification(auth.currentUser); toast('Verification email sent.'); } catch (e) { toast(friendly(e), 'err'); } },
+  'check-verify': async () => {
+    await reload(auth.currentUser); await auth.currentUser.getIdToken(true); S.user = auth.currentUser;
+    toast(S.user.emailVerified ? 'Email verified ✓' : 'Not verified yet — click the link in your email first.', S.user.emailVerified ? 'ok' : 'err'); render();
+  },
+  'new-invoice': el => openInvoice(el.dataset.type),
+  'open-invoice': (el, e) => { e.preventDefault(); const inv = S.invoices.find(i => i.id === el.dataset.id); openInvoice(inv?.type, el.dataset.id); },
+  'close-modal': () => closeModal(),
+  'add-line': () => { S.draft.lines.push(blankLine()); renderInvoiceModal(); },
+  'rm-line': el => { S.draft.lines.splice(+el.dataset.i, 1); renderInvoiceModal(); },
+  'save-invoice': () => saveDraft(),
+  'save-payment': () => savePaymentOnly(),
+  'delete-invoice': async (el, e) => {
+    e.stopPropagation(); const inv = S.invoices.find(i => i.id === el.dataset.id); if (!inv) return;
+    if (!confirm(`Delete ${DOC_LABEL[inv.docType].toLowerCase()} ${inv.invoiceNumber}? This is recorded in the audit trail.`)) return;
+    try { await deleteInvoice(inv.id); closeModal(); toast(`${inv.invoiceNumber} deleted.`); } catch (err) { toast(friendly(err), 'err'); }
+  },
+  'import-invoices': el => openImport(el.dataset.type),
+  'ai-upload': el => openAIUpload(el.dataset.type),
+  'ai-read': el => runAIRead(el),
+  'ai-ask': el => aiAsk(el.dataset.q),
+  'ai-reset': () => { S.chat = null; render(); },
+  'ai-open': el => openChat(el.dataset.id),
+  'ai-delete': el => deleteChat(el.dataset.id),
+  'import-template': el => importTemplate(el.dataset.type),
+  'do-import': async el => {
+    const pv = S.importPreview; if (!pv?.items.length) return; el.disabled = true; el.textContent = 'Importing…';
+    try {
+      const saved = await saveInvoices(pv.items.map(it => ({ draft: it.draft, payment: it.payment })), 'import', { action: 'INVOICES_IMPORTED', entityId: null, meta: { type: pv.type, invoices: pv.items.length } });
+      closeModal(); toast(`Imported ${saved.length} documents — ${saved.filter(s => s.ev.status === 'HAS_ISSUES').length} with issues.`);
+    } catch (e) { console.error(e); toast(friendly(e), 'err'); el.disabled = false; el.textContent = 'Import'; }
+  },
+  'export-invoices': el => {
+    const type = el.dataset.type; const rows = [['type', 'docType', 'invoiceNumber', 'invoiceDate', 'period', 'partyName', 'partyGSTIN', 'placeOfSupply', 'reverseCharge', 'description', 'hsn', 'qty', 'unitPrice', 'taxableValue', 'gstRate', 'cgst', 'sgst', 'igst', 'cess', 'invoiceTotal', 'checks', 'itcStatus', 'reconStatus']];
+    for (const i of filteredInvoices(type)) { const ev = S.evals.get(i.id); ev.lines.forEach(l => rows.push([i.type, i.docType, i.invoiceNumber, i.invoiceDate, i.period, i.partyName, i.partyGSTIN, ev.placeOfSupply, i.reverseCharge ? 'Y' : 'N', l.description, l.hsn, l.qty, l.unitPrice, l.taxableValue, l.gstRate, l.cgst, l.sgst, l.igst, l.cess, ev.totals.totalAmount, ev.status, ev.itcStatus || '', ev.reconStatus || ''])); }
+    download(`taxpilot-${type.toLowerCase()}-${S.fy}.csv`, toCSV(rows), 'text/csv');
+  },
+  'run-checks': async el => { el.disabled = true; try { await runChecks(); } catch (e) { toast(friendly(e), 'err'); } el.disabled = false; },
+  'issue-status': async el => { try { await setIssueStatus(el.dataset.id, el.dataset.st); } catch (e) { toast(friendly(e), 'err'); } },
+  'import-2b': () => open2BImport(),
+  'do-2b': () => do2BImport(),
+  'add-from-2b': el => {
+    const r = S.gstr2b.find(x => x.id === el.dataset.id); if (!r) return;
+    const tax = num(r.igst) + num(r.cgst) + num(r.sgst); const raw = r.taxableValue ? tax / r.taxableValue * 100 : 18;
+    const slab = rateSlab(r.invoiceDate || todayISO()); const rate = slab.rates.reduce((a, b) => Math.abs(b - raw) < Math.abs(a - raw) ? b : a, 18);
+    openInvoice('PURCHASE', null, { docType: r.docType, invoiceNumber: r.invoiceNumber, invoiceDate: r.invoiceDate || `${r.period}-01`, partyName: r.supplierName, partyGSTIN: r.supplierGSTIN, declaredTotal: r.invoiceValue || '',
+      lines: [{ description: '', hsn: '', qty: '', unitPrice: '', taxableValue: r.taxableValue, gstRate: rate, cess: r.cess || '', _manual: true }] });
+  },
+  'mark-paid': async el => {
+    const inv = S.invoices.find(i => i.id === el.dataset.id); const d = prompt(`Payment date for ${inv.invoiceNumber} (DD-MM-YYYY):`, fmtDate(todayISO())); if (d === null) return;
+    const iso = parseDate(d); if (!iso) return toast('Invalid date.', 'err');
+    try { await recordPayment(inv, 'PAID', iso); } catch (e) { toast(friendly(e), 'err'); }
+  },
+  'tab': el => { S.f[el.dataset.k] = el.dataset.v; render(); },
+  'approve-return': () => approveReturn(),
+  'mark-filed': () => markFiled(),
+  'unlock-return': () => unlockReturn(),
+  'print': () => window.print(),
+  'export-return': () => {
+    const p = S.period; const per = S.periods[p]; const locked = isLocked(p) && per.summary;
+    download(`taxpilot-return-${S.biz.gstin}-${p}.json`, JSON.stringify({ gstin: S.biz.gstin, legalName: S.biz.legalName || S.biz.name, period: p, status: per?.status || 'OPEN', arn: per?.arn || null,
+      engineVersion: locked ? per.engineVersion : ENGINE_VERSION, generatedAt: new Date().toISOString(), gstr3b: locked ? per.summary.gstr3b : gstr3b(p), gstr1: locked ? per.summary.gstr1 : gstr1(p) }, null, 2), 'application/json');
+    audit('RETURN_EXPORTED', 'period', p, { period: p });
+  },
+  'export-gstr1-govt': () => {
+    const p = S.period;
+    const gov = buildGstr1GovtJson(p);
+    download(`gstr1-${S.biz.gstin}-${gov.fp}.json`, JSON.stringify(gov, null, 2), 'application/json');
+    audit('RETURN_EXPORTED_GOVT_FORMAT', 'period', p, { period: p });
+    toast('Downloaded. Upload this file into the GST portal\'s "Returns Offline Tool" — it will validate it before you file.');
+  },
+  'accept-invite': async el => {
+    const snap = await getDoc(doc(db, 'businesses', el.dataset.id)); const b = snap.data(); const email = S.user.email.toLowerCase(); const uid = S.user.uid;
+    const invites = { ...b.invites }; delete invites[email];
+    try {
+      await updateDoc(snap.ref, { memberIds: [...b.memberIds, uid], roles: { ...b.roles, [uid]: b.invites[email] }, memberInfo: { ...(b.memberInfo || {}), [uid]: { name: S.user.displayName || '', email } },
+        invites, inviteEmails: b.inviteEmails.filter(e => e !== email), updatedAt: serverTimestamp() });
+      await addDoc(collection(db, 'businesses', snap.id, 'auditLogs'), auditData('MEMBER_JOINED', 'member', uid, { email, role: b.invites[email] }));
+      toast(`You joined ${b.name}.`); await loadBusinesses(); await selectBusiness(snap.id); location.hash = '#/dashboard'; render();
+    } catch (e) { toast(friendly(e), 'err'); }
+  },
+  'decline-invite': async el => {
+    const snap = await getDoc(doc(db, 'businesses', el.dataset.id)); const b = snap.data(); const email = S.user.email.toLowerCase();
+    const invites = { ...b.invites }; delete invites[email];
+    try { await updateDoc(snap.ref, { invites, inviteEmails: b.inviteEmails.filter(e => e !== email), updatedAt: serverTimestamp() }); S.invites = S.invites.filter(x => x.id !== snap.id); render(); } catch (e) { toast(friendly(e), 'err'); }
+  },
+  'remove-member': async el => {
+    const uid = el.dataset.uid; const m = S.biz.memberInfo?.[uid] || {}; if (!confirm(`Remove ${m.name || m.email} from ${S.biz.name}?`)) return;
+    await teamUpdate(n => { n.memberIds = n.memberIds.filter(x => x !== uid); delete n.roles[uid]; delete n.memberInfo[uid]; return n; }, ['MEMBER_REMOVED', 'member', uid, { email: m.email }]);
+    toast('Member removed.');
+  },
+  'cancel-invite': async el => { const e = el.dataset.email; await teamUpdate(n => { delete n.invites[e]; return n; }, ['INVITE_CANCELLED', 'member', null, { email: e }]); toast('Invitation cancelled.'); },
+  'copy-rules': async () => { try { await navigator.clipboard.writeText($('#fs-rules').textContent); toast('Rules copied — paste them in Firestore → Rules and click Publish.'); } catch { toast('Copy failed — select the text manually.', 'err'); } }
+};
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]'); if (!el) return;
+  if (el.tagName === 'A') e.preventDefault();
+  const fn = actions[el.dataset.act]; if (fn) Promise.resolve(fn(el, e)).catch(err => { console.error(err); toast(friendly(err), 'err'); });
+});
+document.addEventListener('input', e => {
+  const el = e.target;
+  if (el.dataset.filter === 'q') { S.f.q = el.value; const tb = $('#inv-tbody'); if (tb) tb.innerHTML = invoiceRows(tb.dataset.type); return; }
+  if (el.closest('form[data-form="update-business"]')) S.formDirty = true;
+  if (el.hasAttribute('data-gstin-auto')) {
+    const g = validateGSTIN(el.value); const f = el.form; const h = $('#gstin-hint');
+    if (g.ok) { f.pan.value = g.pan; f.stateCode.value = g.stateCode; h.className = 'hint ok'; h.textContent = `✓ Valid GSTIN · ${g.state} · PAN ${g.pan}`; }
+    else { h.className = el.value ? 'hint bad' : 'hint'; h.textContent = el.value ? `GSTIN ${g.error}` : '15 characters — state and PAN are filled automatically'; }
+  }
+  if (S.draft && (el.dataset.d || el.dataset.l)) onDraftInput(el, false);
+});
+document.addEventListener('change', async e => {
+  const el = e.target;
+  if (S.draft && (el.dataset.d || el.dataset.l)) return onDraftInput(el, true);
+  if (el.dataset.filter && el.dataset.filter !== 'q') { S.f[el.dataset.filter] = el.value; render(); return; }
+  if (el.dataset.file === 'ai-invoice') {
+    const file = el.files[0]; const btn = $('[data-act="ai-read"]'); const st = $('#ai-status');
+    S.aiFile = null; btn.disabled = true; st.innerHTML = '';
+    if (!file) return;
+    if (!/^(application\/pdf|image\/(png|jpeg|webp))$/.test(file.type)) { st.innerHTML = '<div class="notice bad">Please choose a PDF, JPG, PNG or WEBP file.</div>'; return; }
+    if (file.size > 15 * 1024 * 1024) { st.innerHTML = '<div class="notice bad">File is larger than 15 MB.</div>'; return; }
+    S.aiFile = file; btn.disabled = false; st.innerHTML = `<div class="small muted">${esc(file.name)} · ${(file.size / 1024).toFixed(0)} KB</div>`;
+    return;
+  }
+  if (el.dataset.file === 'import') {
+    const file = el.files[0]; if (!file) return; const box = $('#import-preview'); box.innerHTML = '<div class="spin"></div>';
+    try {
+      const rows = await readSheet(file); const r = buildImport(rows, S.importPreview.type); S.importPreview = { ...S.importPreview, ...r };
+      const ctx = engineCtx(); let issues = 0;
+      for (const it of r.items) { const inv = normalizeDraft(it.draft); inv.id = '__imp' + Math.random(); const ev = evaluateInvoice(inv, ctx); ctx.invoices.push(inv); if (ev.status === 'HAS_ISSUES') issues++; }
+      box.innerHTML = `<div class="notice ${r.items.length ? 'ok' : 'warn'}">${r.items.length} document(s) ready from ${rows.length} row(s)${issues ? ` · ${issues} will be flagged with issues` : ''}.</div>`
+        + (r.errors.length ? `<div class="notice bad"><b>${r.errors.length} row(s) skipped:</b><br>${r.errors.slice(0, 12).map(esc).join('<br>')}${r.errors.length > 12 ? '<br>…' : ''}</div>` : '');
+      $('[data-act="do-import"]').disabled = !r.items.length;
+    } catch (err) { box.innerHTML = `<div class="notice bad">${esc(err.message)}</div>`; }
+    return;
+  }
+  if (el.dataset.file === '2b') {
+    const file = el.files[0]; if (!file) return; const box = $('#twob-preview');
+    try {
+      let pv;
+      if (/\.json$/i.test(file.name)) pv = parse2B(JSON.parse(await file.text()));
+      else pv = { period: null, rows: parse2BRows(await readSheet(file)) };
+      const bad = pv.rows.filter(r => !validateGSTIN(r.supplierGSTIN).ok || !r.invoiceNumber).length;
+      pv.rows = pv.rows.filter(r => r.invoiceNumber);
+      S.twoBPreview = pv;
+      if (pv.period) $('#twob-period').value = pv.period;
+      box.innerHTML = `<div class="notice ${pv.rows.length ? 'ok' : 'warn'}">${pv.rows.length} document(s) found${pv.period ? ` for ${periodLabel(pv.period)}` : ''} · ${pv.rows.filter(r => r.docType === 'INVOICE').length} invoices, ${pv.rows.filter(r => r.docType !== 'INVOICE').length} notes${bad ? ` · ${bad} with an invalid GSTIN` : ''}.</div>`;
+      $('[data-act="do-2b"]').disabled = !pv.rows.length;
+    } catch (err) { box.innerHTML = `<div class="notice bad">Could not read file: ${esc(err.message)}</div>`; }
+    return;
+  }
+  if (el.dataset.change === 'biz') {
+    if (el.value === '__new') { location.hash = '#/onboarding'; return; }
+    S.f.month = 'CUR'; await selectBusiness(el.value); render(); return;
+  }
+  if (el.dataset.change === 'fy') { S.fy = el.value; S.period = defaultPeriod(S.fy); unsubAll(); Object.assign(S, { invoices: [], issues: [], gstr2b: [], payments: {} }); subscribe(); render(); return; }
+  if (el.dataset.change === 'period') { S.period = el.value; render(); return; }
+  if (el.dataset.change === 'member-role') {
+    const uid = el.dataset.uid; const from = S.biz.roles[uid];
+    try { await teamUpdate(n => { n.roles[uid] = el.value; return n; }, ['ROLE_CHANGED', 'member', uid, { from, to: el.value }]); toast('Role updated.'); } catch { render(); }
+  }
+});
+function onDraftInput(el, isChange) {
+  const d = S.draft;
+  if (el.dataset.d) {
+    const k = el.dataset.d; d[k] = el.type === 'checkbox' ? el.checked : el.value;
+    if (k === 'partyGSTIN') {
+      const g = validateGSTIN(el.value); const h = $('#party-hint');
+      if (h) { h.className = 'hint ' + (g.ok ? 'ok' : el.value ? 'bad' : ''); h.textContent = g.ok ? '✓ ' + g.state : el.value ? g.error : ''; }
+    }
+    if (isChange && ['docType', 'invoiceDate', 'paymentStatus'].includes(k)) { renderInvoiceModal(); return; }
+  } else {
+    const [i, k] = el.dataset.l.split(':'); const l = d.lines[+i]; l[k] = el.value;
+    if (k === 'taxableValue') l._manual = el.value !== '';
+    if ((k === 'qty' || k === 'unitPrice') && !l._manual) {
+      const v = num(l.qty) * num(l.unitPrice); l.taxableValue = v ? round2(v) : '';
+      const inp = $(`[data-l="${i}:taxableValue"]`); if (inp) inp.value = l.taxableValue;
+    }
+  }
+  updateInvoicePreview();
+}
+document.addEventListener('submit', async e => {
+  const f = e.target; const kind = f.dataset.form; if (!kind) return; e.preventDefault();
+  if (kind === 'ai-chat') { const q = f.q.value; f.q.value = ''; return aiAsk(q); }
+  const btn = f.querySelector('button:not([type=button])'); const label = btn?.textContent;
+  const busy = on => { if (btn) { btn.disabled = on; btn.textContent = on ? 'Please wait…' : label; } };
+  const fd = Object.fromEntries(new FormData(f).entries());
+  busy(true);
+  try {
+    if (kind === 'login') { await signInWithEmailAndPassword(auth, fd.email.trim(), fd.password); }
+    else if (kind === 'signup') {
+      if (fd.password !== fd.password2) throw new Error('Passwords do not match.');
+      const cred = await createUserWithEmailAndPassword(auth, fd.email.trim(), fd.password);
+      await updateProfile(cred.user, { displayName: fd.name.trim() });
+      await setDoc(doc(db, 'users', cred.user.uid), { uid: cred.user.uid, name: fd.name.trim(), email: cred.user.email, activeBusinessId: null, createdAt: serverTimestamp(), updatedAt: serverTimestamp() }, { merge: true });
+      sendEmailVerification(cred.user).catch(() => { });
+      S.user = auth.currentUser; S.profile = { name: fd.name.trim() }; render();
+    }
+    else if (kind === 'reset') { await sendPasswordResetEmail(auth, fd.email.trim()); authMsg('If an account exists for this email, a reset link has been sent.', 'ok'); }
+    else if (kind === 'create-business') {
+      const d = readBizForm(f); const uid = S.user.uid; const ref = doc(collection(db, 'businesses'));
+      const b = writeBatch(db);
+      b.set(ref, { ...d, createdBy: uid, memberIds: [uid], roles: { [uid]: 'OWNER' }, memberInfo: { [uid]: { name: S.user.displayName || '', email: S.user.email.toLowerCase() } },
+        invites: {}, inviteEmails: [], createdAt: serverTimestamp(), updatedAt: serverTimestamp() });
+      b.set(doc(db, 'users', uid), { activeBusinessId: ref.id, updatedAt: serverTimestamp() }, { merge: true });
+      await b.commit();
+      await addDoc(collection(db, 'businesses', ref.id, 'auditLogs'), auditData('BUSINESS_CREATED', 'business', ref.id, { name: d.name, gstin: d.gstin }));
+      S.fy = d.financialYear || fyOf(todayISO());
+      await loadBusinesses(); await selectBusiness(ref.id); S.bootError = '';
+      toast(`${d.name} created.`); location.hash = '#/dashboard'; render();
+    }
+    else if (kind === 'update-business') {
+      const d = readBizForm(f); const b = writeBatch(db);
+      const changedKeys = Object.keys(d).filter(k => d[k] !== (S.biz[k] ?? ''));
+      b.update(bizRef(), { ...d, updatedAt: serverTimestamp() });
+      auditIn(b, 'BUSINESS_UPDATED', 'business', S.biz.id, { changed: changedKeys });
+      await b.commit(); S.formDirty = false; toast('Business profile saved.');
+      if (changedKeys.some(k => ['stateCode', 'registrationType', 'gstin'].includes(k)) && can('write')) await runChecks({ biz: { ...S.biz, ...d } }, true);
+      render();
+    }
+    else if (kind === 'change-email' || kind === 'change-password') {
+      const u = auth.currentUser;
+      await reauthenticateWithCredential(u, EmailAuthProvider.credential(u.email, fd.password));
+      if (kind === 'change-email') {
+        const ne = fd.newEmail.trim().toLowerCase();
+        if (ne === u.email.toLowerCase()) throw new Error('That is already your email.');
+        await verifyBeforeUpdateEmail(u, ne);
+        audit('EMAIL_CHANGE_REQUESTED', 'user', u.uid, { from: u.email, to: ne });
+        toast(`Verification link sent to ${ne}. Click it, then sign in again with the new email.`);
+      } else {
+        await updatePassword(u, fd.newPassword);
+        audit('PASSWORD_CHANGED', 'user', u.uid, {});
+        toast('Password updated.');
+      }
+      f.reset();
+    }
+    else if (kind === 'invite') {
+      const email = fd.email.trim().toLowerCase(); const role = fd.role;
+      if (Object.values(S.biz.memberInfo || {}).some(m => m.email === email)) throw new Error('This person is already a member.');
+      await teamUpdate(n => { n.invites[email] = role; return n; }, ['MEMBER_INVITED', 'member', null, { email, role }]);
+      toast(`Invitation recorded for ${email}. Ask them to sign up with this email.`); f.reset();
+    }
+  } catch (err) {
+    console.error(err);
+    if (['login', 'signup', 'reset'].includes(kind)) authMsg(friendly(err)); else toast(friendly(err), 'err');
+  } finally { busy(false); }
+});
+window.addEventListener('hashchange', () => { S.formDirty = false; S.navOpen = false; if (!S.draft) closeModal(); render(); });
+
+/* =====================================================================
+   BOOT
+   ===================================================================== */
+const withTimeout = (p, ms, msg) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error(msg)), ms))]);
+const BOOT_TIMEOUT_MSG = location.protocol === 'file:'
+  ? 'The database cannot be reached because this file was opened directly (file://). Open it through a web server instead, e.g. http://localhost:5510/taxpilot-ai.html.'
+  : 'The Firestore database is not responding. Make sure it has been created in Firebase Console → Firestore Database, and check your internet connection.';
+onAuthStateChanged(auth, async user => {
+  unsubAll(); S.authReady = true; S.user = user; S.biz = null; S.businesses = []; S.invites = []; S.bootError = ''; S.fy = null; S.chat = null; S.chatList = null;
+  if (!user) { if (!['', 'login', 'signup', 'reset'].includes(route())) location.hash = '#/'; render(); return; }
+  S.booting = true; render();
+  try {
+    await withTimeout((async () => { await ensureProfile(); await loadBusinesses(); })(), 15000, BOOT_TIMEOUT_MSG);
+    const pick = (S.profile?.activeBusinessId && S.businesses.find(b => b.id === S.profile.activeBusinessId)) || S.businesses[0];
+    if (pick) await selectBusiness(pick.id);
+  } catch (e) { console.error(e); S.bootError = friendly(e); }
+  S.booting = false;
+  if (['', 'login', 'signup', 'reset'].includes(route())) location.hash = S.biz ? '#/dashboard' : '#/onboarding';
+  render();
+});
+render();
+
+// expose the pure engine for automated tests
+window.TaxPilotEngine = { validateGSTIN, gstinCheckChar, evaluateInvoice, setOff, fyOf, fyMonths, parseDate, rateSlab, parse2B };
+</script>
+</body>
+</html>

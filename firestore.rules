@@ -1,0 +1,123 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function uid() { return request.auth.uid; }
+    function email() { return request.auth.token.email; }
+    function changed() { return request.resource.data.diff(resource.data).affectedKeys(); }
+
+    match /users/{userId} {
+      allow read, create, update: if signedIn() && uid() == userId;
+      allow delete: if false;
+    }
+
+    match /businesses/{bid} {
+      function bizData() { return get(/databases/$(database)/documents/businesses/$(bid)).data; }
+      function member() { return signedIn() && uid() in bizData().memberIds; }
+      function hasRole(rs) { return member() && bizData().roles[uid()] in rs; }
+      function periodOpen(p) {
+        let path = /databases/$(database)/documents/businesses/$(bid)/periods/$(p);
+        return p is string && p.matches('^[0-9]{4}-[0-9]{2}$')
+          && (!exists(path) || get(path).data.status == 'OPEN');
+      }
+
+      allow read: if signedIn() && (uid() in resource.data.memberIds || email() in resource.data.inviteEmails);
+
+      allow create: if signedIn()
+        && request.resource.data.createdBy == uid()
+        && request.resource.data.memberIds == [uid()]
+        && request.resource.data.roles.keys().hasOnly([uid()])
+        && request.resource.data.roles[uid()] == 'OWNER'
+        && request.resource.data.inviteEmails.size() == 0
+        && request.resource.data.invites.size() == 0
+        && request.resource.data.name is string && request.resource.data.name.size() > 0
+        && request.resource.data.gstin is string && request.resource.data.gstin.size() == 15;
+
+      allow update: if signedIn() && (
+        // profile edits by owner / admin
+        (uid() in resource.data.memberIds && resource.data.roles[uid()] in ['OWNER', 'ADMIN']
+          && !changed().hasAny(['memberIds', 'roles', 'memberInfo', 'invites', 'inviteEmails', 'createdBy', 'createdAt']))
+        ||
+        // team management by owner; the owner must remain an owner
+        (uid() in resource.data.memberIds && resource.data.roles[uid()] == 'OWNER'
+          && changed().hasOnly(['memberIds', 'roles', 'memberInfo', 'invites', 'inviteEmails', 'updatedAt'])
+          && uid() in request.resource.data.memberIds
+          && request.resource.data.roles[uid()] == 'OWNER'
+          && request.resource.data.roles.keys().toSet() == request.resource.data.memberIds.toSet()
+          && request.resource.data.inviteEmails.toSet() == request.resource.data.invites.keys().toSet())
+        ||
+        // accept an invitation (verified email only)
+        (request.auth.token.email_verified == true
+          && email() in resource.data.inviteEmails
+          && !(uid() in resource.data.memberIds)
+          && changed().hasOnly(['memberIds', 'roles', 'memberInfo', 'invites', 'inviteEmails', 'updatedAt'])
+          && request.resource.data.memberIds.toSet() == resource.data.memberIds.toSet().union([uid()].toSet())
+          && request.resource.data.roles.diff(resource.data.roles).affectedKeys().hasOnly([uid()])
+          && request.resource.data.roles[uid()] == resource.data.invites[email()]
+          && request.resource.data.memberInfo.diff(resource.data.memberInfo).affectedKeys().hasOnly([uid()])
+          && request.resource.data.invites.diff(resource.data.invites).affectedKeys().hasOnly([email()])
+          && !(email() in request.resource.data.invites)
+          && request.resource.data.inviteEmails.toSet() == resource.data.inviteEmails.toSet().difference([email()].toSet()))
+        ||
+        // decline an invitation
+        (email() in resource.data.inviteEmails
+          && changed().hasOnly(['invites', 'inviteEmails', 'updatedAt'])
+          && request.resource.data.invites.diff(resource.data.invites).affectedKeys().hasOnly([email()])
+          && !(email() in request.resource.data.invites)
+          && request.resource.data.inviteEmails.toSet() == resource.data.inviteEmails.toSet().difference([email()].toSet()))
+      );
+      allow delete: if false;
+
+      match /invoices/{invId} {
+        allow read: if member();
+        allow create: if hasRole(['OWNER', 'ADMIN', 'ACCOUNTANT'])
+          && request.resource.data.type in ['SALE', 'PURCHASE']
+          && periodOpen(request.resource.data.period);
+        allow update: if hasRole(['OWNER', 'ADMIN', 'ACCOUNTANT'])
+          && periodOpen(resource.data.period) && periodOpen(request.resource.data.period);
+        allow delete: if hasRole(['OWNER', 'ADMIN', 'ACCOUNTANT']) && periodOpen(resource.data.period);
+      }
+
+      match /payments/{invId} {
+        allow read: if member();
+        allow write: if hasRole(['OWNER', 'ADMIN', 'ACCOUNTANT']);
+      }
+
+      match /issues/{issueId} {
+        allow read: if member();
+        allow create, update: if hasRole(['OWNER', 'ADMIN', 'ACCOUNTANT', 'CA']);
+        allow delete: if false;
+      }
+
+      match /gstr2b/{rowId} {
+        allow read: if member();
+        allow write: if hasRole(['OWNER', 'ADMIN', 'ACCOUNTANT']);
+      }
+
+      match /periods/{p} {
+        allow read: if member();
+        allow create: if p.matches('^[0-9]{4}-[0-9]{2}$') && request.resource.data.status == 'APPROVED'
+          && hasRole(['OWNER', 'CA']);
+        allow update: if p.matches('^[0-9]{4}-[0-9]{2}$') && (
+          (resource.data.status == 'OPEN' && request.resource.data.status == 'APPROVED' && hasRole(['OWNER', 'CA']))
+          || (resource.data.status == 'APPROVED' && request.resource.data.status == 'FILED' && hasRole(['OWNER', 'CA']))
+          || (resource.data.status == 'APPROVED' && request.resource.data.status == 'OPEN' && hasRole(['OWNER'])));
+        allow delete: if false;
+      }
+
+      match /aiConversations/{convId} {
+        allow read, delete: if member() && resource.data.userId == uid();
+        allow create: if member() && request.resource.data.userId == uid();
+        allow update: if member() && resource.data.userId == uid() && request.resource.data.userId == uid();
+      }
+
+      match /auditLogs/{logId} {
+        allow read: if member();
+        allow create: if member() && request.resource.data.userId == uid()
+          && request.resource.data.timestamp == request.time;
+        allow update, delete: if false;
+      }
+    }
+  }
+}
