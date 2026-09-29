@@ -18,23 +18,28 @@
 
 require('dotenv').config();
 const admin = require('firebase-admin');
-const { loadCredentials } = require('./loadCredentials');
+const { loadServiceAccount, getMongoUri } = require('./loadCredentials');
 const { runSync } = require('./syncCore');
 
 (async () => {
-  let creds;
+  let serviceAccount;
   try {
-    creds = loadCredentials();
+    serviceAccount = loadServiceAccount();
   } catch (e) {
     console.error(e.message);
     process.exit(1);
   }
+  const mongoUri = getMongoUri();
+  if (!mongoUri) {
+    console.error('Missing SOURCE_MONGO_URI — set it in .env (should be a dedicated read-only MongoDB user, not Abra Finance\'s own credential).');
+    process.exit(1);
+  }
 
-  admin.initializeApp({ credential: admin.credential.cert(creds.serviceAccount) });
+  admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
   const db = admin.firestore();
 
   try {
-    const result = await runSync(db, creds.mongoUri);
+    const result = await runSync(db, mongoUri);
     result.log.forEach(line => console.log('  ' + line));
   } catch (e) {
     console.error('Sync failed:', e);
